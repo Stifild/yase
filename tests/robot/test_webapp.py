@@ -20,7 +20,7 @@ def test_404(browser):
 
 def test_about(browser):
     browser.visit(url)
-    browser.links.find_by_text('About').click()
+    browser.links.find_by_text('YASE').click()
     assert browser.is_text_present('Why use it?')
 
 

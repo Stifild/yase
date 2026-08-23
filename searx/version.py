@@ -72,7 +72,13 @@ def get_git_version() -> tuple[str, str, str]:
     git_commit_date_hash = git_commit_date_hash.replace('.0', '.')
     tag_version: str = git_commit_date_hash
     git_version: str = git_commit_date_hash
-    docker_tag: str = git_commit_date_hash.replace("+", "-")
+    short_commit = subprocess_run("git rev-parse --short HEAD")
+    try:
+        latest_tag = subprocess_run("git describe --tags --abbrev=0")
+    except subprocess.CalledProcessError:
+        latest_tag = "untagged"
+    commit_date = subprocess_run(r"git show -s --date='format:%d.%m.%Y' --format='%cd'")
+    docker_tag: str = f"{latest_tag}-{commit_date}-{short_commit}"
 
     # add "+dirty" suffix if there are uncommitted changes except searx/settings.yml
     try:

@@ -120,23 +120,23 @@ export default {
       svg2svg_opts
     ),
 
-    // SearXNG brand (static)
+    // YASE brand (static)
     plg_svg2png([
       {
-        src: `${PATH.brand}/searxng-wordmark.svg`,
+        src: `${PATH.brand}/yase-icon.svg`,
         dest: `${PATH.dist}/img/favicon.png`
       },
       {
-        src: `${PATH.brand}/searxng.svg`,
-        dest: `${PATH.dist}/img/searxng.png`
+        src: `${PATH.brand}/yase.svg`,
+        dest: `${PATH.dist}/img/yase.png`
       }
     ]),
 
-    // SearXNG PWA Icons (static)
+    // YASE PWA Icons (static)
     plg_svg2png(
       [
         {
-          src: `${PATH.brand}/searxng-wordmark.svg`,
+          src: `${PATH.brand}/yase-icon.svg`,
           dest: `${PATH.dist}/img/512.png`
         }
       ],
@@ -146,7 +146,7 @@ export default {
     plg_svg2png(
       [
         {
-          src: `${PATH.brand}/searxng-wordmark.svg`,
+          src: `${PATH.brand}/yase-icon.svg`,
           dest: `${PATH.dist}/img/192.png`
         }
       ],
@@ -158,8 +158,8 @@ export default {
     plg_svg2svg(
       [
         {
-          src: `${PATH.brand}/searxng.svg`,
-          dest: `${PATH.dist}/img/searxng.svg`
+          src: `${PATH.brand}/yase.svg`,
+          dest: `${PATH.dist}/img/yase.svg`
         },
         {
           src: `${PATH.brand}/img_load_error.svg`,
@@ -173,7 +173,7 @@ export default {
     plg_svg2svg(
       [
         {
-          src: `${PATH.brand}/searxng-wordmark.svg`,
+          src: `${PATH.brand}/yase-icon.svg`,
           dest: `${PATH.dist}/img/favicon.svg`
         }
       ],
@@ -184,8 +184,8 @@ export default {
     plg_svg2svg(
       [
         {
-          src: `${PATH.brand}/searxng-wordmark.svg`,
-          dest: `${PATH.templates}/searxng-wordmark.min.svg`
+          src: `${PATH.brand}/yase-icon.svg`,
+          dest: `${PATH.templates}/yase-icon.min.svg`
         }
       ],
       svg2svg_opts

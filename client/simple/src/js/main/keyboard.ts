@@ -353,7 +353,7 @@ const initHelpContent = (divElement: HTMLElement, keyBindings: typeof baseKeyBin
   );
 
   let html = '<a href="#" class="close" aria-label="close" title="close">×</a>';
-  html += "<h3>How to navigate SearXNG with hotkeys</h3>";
+  html += "<h3>How to navigate YASE with hotkeys</h3>";
   html += "<table>";
 
   for (const [i, categoryKey] of sortedCategoryKeys.entries()) {

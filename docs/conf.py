@@ -205,7 +205,7 @@ imgmath_font_size = 14
 # sphinx.ext.imgmath setup END
 
 html_show_sphinx = False
-html_logo = "../client/simple/src/brand/searxng-wordmark.svg"
+html_logo = "../client/simple/src/brand/yase-icon.svg"
 html_title = "SearXNG Documentation ({})".format(VERSION_STRING)
 html_show_sourcelink = True
 html_copy_source = True

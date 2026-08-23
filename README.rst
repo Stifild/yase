@@ -6,9 +6,9 @@
 .. _CONTRIBUTING: https://github.com/searxng/searxng/blob/master/CONTRIBUTING.rst
 .. _LICENSE: https://github.com/searxng/searxng/blob/master/LICENSE
 
-.. figure:: https://raw.githubusercontent.com/searxng/searxng/master/client/simple/src/brand/searxng.svg
-   :target: https://searxng.org
-   :alt: SearXNG
+.. figure:: client/simple/src/brand/yase.svg
+   :target: https://yase.org
+   :alt: YASE
    :width: 512px
 
 

@@ -251,6 +251,13 @@
   // Favicons Colors
   --color-favicon-background-color: #ddd;
   --color-favicon-border-color: #ccc;
+
+  // YASE brand logo (black/white) — invert so it stays visible on dark backgrounds
+  .page_with_header .logo,
+  .index .title,
+  #search_logo svg {
+    filter: invert(1);
+  }
 }
 
 .black-themes() {

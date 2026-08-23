@@ -1,5 +1,8 @@
 {%- from 'simple/icons.html' import icon_small, icon_big -%}
 {%- extends "simple/page_with_header.html" -%}
+{%- block linkto_about -%}
+<a href="{{ url_for('info', pagename='about') }}" class="link_on_top_about" title="{{ _('About') }}">{{ icon_big('information-circle') }}</a>
+{%- endblock -%}
 
 {%- macro tabs_open() -%}
 <div class="tabs" role="tablist">

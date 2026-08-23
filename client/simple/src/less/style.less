@@ -324,6 +324,22 @@ article[data-vim-selected].category-social {
   .break {
     clear: both;
   }
+
+  // Standardize images inside general/default results: square thumbnails,
+  // rounded corners, aligned to the right of the description paragraph.
+  &.result-default .content {
+    overflow: hidden;
+
+    img {
+      width: 8rem;
+      height: 8rem;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      float: right;
+      margin: 0.25rem 0 0.5rem 1rem;
+    }
+  }
 }
 
 .result-packages {

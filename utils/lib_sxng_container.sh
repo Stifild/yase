@@ -8,7 +8,8 @@ container.:
 EOF
 }
 
-CONTAINER_IMAGE_ORGANIZATION=${GITHUB_REPOSITORY_OWNER:-"searxng"}
+# container image names must be lowercase; GITHUB_REPOSITORY_OWNER may be "Stifild"
+CONTAINER_IMAGE_ORGANIZATION=$(printf '%s' "${GITHUB_REPOSITORY_OWNER:-searxng}" | tr '[:upper:]' '[:lower:]')
 CONTAINER_IMAGE_NAME=${CONTAINER_IMAGE_NAME:-"searxng"}
 
 container.build() {

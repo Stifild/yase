@@ -1205,7 +1205,7 @@ def opensearch():
 @app.route('/manifest.json', methods=['GET'])
 def manifest():
     theme = sxng_request.preferences.get_value('simple_style')
-    if theme not in ("light", "dark", "black"):
+    if theme not in ("light", "dark"):
         theme = "light"
 
     theme_color = get_setting(f'brand.pwa_colors.theme_color_{theme}')

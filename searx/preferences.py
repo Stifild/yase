@@ -465,7 +465,7 @@ class Preferences:
             'simple_style': EnumStringSetting(
                 get_setting("ui.theme_args.simple_style"),
                 locked="simple_style" in self.cfg.lock,
-                choices=["", "auto", "light", "dark", "black"],
+                choices=["", "auto", "light", "dark"],
             ),
             'center_alignment': BooleanSetting(
                 get_setting("ui.center_alignment"),

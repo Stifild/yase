@@ -325,19 +325,21 @@ article[data-vim-selected].category-social {
     clear: both;
   }
 
-  // Standardize images inside general/default results: square thumbnails,
-  // rounded corners, aligned to the right of the description paragraph.
-  &.result-default .content {
-    overflow: hidden;
+  // General/default results: standardize the thumbnail as a square, rounded
+  // image aligned to the right of the description paragraph.
+  &.result-default {
+    a.thumbnail_link {
+      .ltr-margin-right(0);
+      .ltr-margin-left(1rem);
+      .ltr-float-right();
 
-    img {
-      width: 8rem;
-      height: 8rem;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      border-radius: 0.5rem;
-      float: right;
-      margin: 0.25rem 0 0.5rem 1rem;
+      img.thumbnail {
+        width: 8rem;
+        height: 8rem;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 0.5rem;
+      }
     }
   }
 }

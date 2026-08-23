@@ -211,7 +211,7 @@ container.test() {
 
 container.push() {
     # Architectures on manifest
-    local release_archs=("amd64" "arm64" "armv7")
+    local release_archs=("amd64" "arm64")
 
     local archs=()
     local variants=()

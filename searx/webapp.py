@@ -337,7 +337,16 @@ def get_translations():
         'ai_answer_model_full': gettext('Full model'),
         'ai_answer_unsupported': gettext('not supported on this device'),
         'ai_answer_loading': gettext('Loading the model'),
+        'ai_answer_step_prepare': gettext('Preparing the model'),
+        'ai_answer_step_generate': gettext('Generating the answer'),
         'ai_answer_error': gettext('Could not generate an answer'),
+        'ai_answer_retry': gettext('Try again'),
+        'ai_answer_patience_1': gettext('Still here. The model is big, not stuck.'),
+        'ai_answer_patience_2': gettext('Large downloads happen once, then it is cached.'),
+        'ai_answer_patience_3': gettext('Your GPU is warming up.'),
+        'ai_answer_patience_4': gettext('Good answers take a moment.'),
+        'ai_answer_patience_5': gettext('Almost there. Probably.'),
+        'ai_answer_sources': gettext('Sources'),
         'ai_answer_disclaimer_compact': gettext(
             'This is a compact model: check the sources, the answer may be inaccurate.'
         ),

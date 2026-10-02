@@ -3,7 +3,62 @@
 #answers .ai-answer {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding-left: 0.9rem;
+  border-left: 3px solid var(--color-btn-background);
+  animation: ai-answer-enter 0.35s ease-out both;
+
+  .ai-answer-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ai-answer-title {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .ai-answer-spark {
+    display: inline-block;
+    margin-right: 0.4em;
+    color: var(--color-btn-background);
+    cursor: default;
+    user-select: none;
+  }
+
+  .ai-answer-spark-spin {
+    animation: ai-answer-spark-spin 0.9s ease-out;
+  }
+
+  .ai-answer-header {
+    position: relative;
+  }
+
+  .ai-answer-particle {
+    position: absolute;
+    left: 0.5em;
+    top: 50%;
+    pointer-events: none;
+    color: hsl(var(--hue) 90% 60%);
+    animation: ai-answer-burst 0.9s ease-out forwards;
+  }
+
+  .ai-answer-badge {
+    padding: 0.1rem 0.55rem;
+    font-size: 0.8em;
+    border: 1px solid var(--color-result-border);
+    border-radius: 999px;
+    opacity: 0.8;
+    animation: ai-answer-pop 0.3s ease-out both;
+  }
+
+  .ai-answer-setup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 
   .ai-answer-controls {
     display: flex;
@@ -14,35 +69,353 @@
 
   .ai-answer-model {
     max-width: 100%;
+    padding: 0.35rem 0.5rem;
+    color: inherit;
+    background: transparent;
+    border: 1px solid var(--color-result-border);
+    .rounded-corners;
   }
 
   .ai-answer-button {
-    padding: 0.4rem 0.9rem;
+    padding: 0.45rem 1rem;
     border: 0;
     cursor: pointer;
     background: var(--color-btn-background);
     color: var(--color-btn-font);
+    transition:
+      filter 0.15s,
+      transform 0.1s;
     .rounded-corners;
+
+    &:hover {
+      filter: brightness(1.12);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.97);
+    }
+
+    &:focus-visible,
+    &.ai-answer-model:focus-visible {
+      outline: 2px solid var(--color-btn-background);
+      outline-offset: 2px;
+    }
+  }
+
+  .ai-answer-model:focus-visible {
+    outline: 2px solid var(--color-btn-background);
+    outline-offset: 2px;
+  }
+
+  .ai-answer-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+
+    > * {
+      animation: ai-answer-enter 0.3s ease-out both;
+    }
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  .ai-answer-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .ai-answer-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.9em;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0.45;
+      transition: opacity 0.3s;
+
+      &[data-state="active"],
+      &[data-state="done"] {
+        opacity: 1;
+      }
+
+      &[data-state="done"] {
+        opacity: 0.7;
+      }
+    }
+  }
+
+  .ai-answer-step-icon {
+    position: relative;
+    flex: none;
+    box-sizing: border-box;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--color-result-border);
+    border-radius: 50%;
+    transition:
+      background 0.3s,
+      border-color 0.3s;
+  }
+
+  .ai-answer-steps li[data-state="active"] .ai-answer-step-icon {
+    border-top-color: var(--color-btn-background);
+    animation: ai-answer-spin 0.8s linear infinite;
+  }
+
+  .ai-answer-steps li[data-state="done"] .ai-answer-step-icon {
+    background: var(--color-btn-background);
+    border-color: var(--color-btn-background);
+    animation: ai-answer-pop 0.3s ease-out;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0.26rem;
+      top: 0.06rem;
+      width: 0.22rem;
+      height: 0.46rem;
+      border: solid var(--color-btn-font);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
   }
 
   .ai-answer-progress {
-    width: 100%;
+    position: relative;
+    flex: 1 1 10rem;
+    height: 0.4rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--color-result-border);
+
+    > span {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0;
+      background: var(--color-btn-background);
+      border-radius: inherit;
+      transition: width 0.25s ease-out;
+    }
+
+    &[data-indeterminate] > span {
+      width: 40%;
+      animation: ai-answer-slide 1.3s ease-in-out infinite;
+    }
+  }
+
+  // old and new phrase share one grid cell, so the height never jumps
+  .ai-answer-patience {
+    display: grid;
+    flex-basis: 100%;
+    overflow: hidden;
+
+    > span {
+      grid-area: 1 / 1;
+    }
+  }
+
+  .ai-answer-patience-text {
+    animation: ai-answer-text-in 0.45s ease-out both;
+
+    &.leaving {
+      animation: ai-answer-text-out 0.3s ease-in forwards;
+    }
   }
 
   .ai-answer-text {
     margin: 0;
+    line-height: 1.55;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
 
+  // thin caret: steady while characters are being revealed, blinking while
+  // waiting for the model
+  .ai-answer-body[data-state="generating"] .ai-answer-text::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1.1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    border-radius: 1px;
+    background: var(--color-btn-background);
+    animation: ai-answer-blink 1s steps(2, start) infinite;
+  }
+
+  .ai-answer-body[data-state="generating"] .ai-answer-text[data-typing]::after {
+    animation: none;
+  }
+
+  .ai-answer-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--color-result-border);
+    animation: ai-answer-enter 0.4s ease-out both;
+  }
+
+  .ai-answer-sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      animation: ai-answer-pop 0.35s ease-out both;
+
+      &:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.16s;
+      }
+
+      &:nth-child(n + 4) {
+        animation-delay: 0.24s;
+      }
+    }
+
+    a {
+      display: inline-block;
+      max-width: 100%;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.85em;
+      text-decoration: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid var(--color-result-border);
+      border-radius: 999px;
+
+      &:hover,
+      &:focus-visible {
+        border-color: var(--color-btn-background);
+      }
+    }
+  }
+
   .ai-answer-hint {
+    margin: 0;
     font-size: 0.85em;
     opacity: 0.7;
   }
 
   .ai-answer-cite {
+    padding: 0 0.1em;
     text-decoration: none;
-    font-size: 0.85em;
+    font-size: 0.8em;
     vertical-align: super;
+    border-radius: 3px;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--color-result-border);
+    }
+  }
+}
+
+@keyframes ai-answer-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes ai-answer-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes ai-answer-text-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.8em);
+  }
+}
+
+@keyframes ai-answer-text-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.8em);
+  }
+}
+
+@keyframes ai-answer-burst {
+  from {
+    opacity: 1;
+    transform: translate(0, -50%) scale(0.4);
+  }
+
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), calc(var(--dy) - 50%)) scale(1.3) rotate(180deg);
+  }
+}
+
+@keyframes ai-answer-spark-spin {
+  to {
+    transform: rotate(360deg) scale(1.4);
+  }
+}
+
+@keyframes ai-answer-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ai-answer-pulse {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes ai-answer-slide {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes ai-answer-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #answers .ai-answer,
+  #answers .ai-answer * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+  }
+
+  // keep a static cue that work is in progress
+  #answers .ai-answer .ai-answer-progress[data-indeterminate] > span {
+    width: 100%;
+    opacity: 0.4;
   }
 }

@@ -1797,6 +1797,42 @@ msgid "Summarizes the top results with a language model that runs in your browse
 msgstr "Кратко пересказывает лучшие результаты с помощью языковой модели, которая работает в вашем браузере"
 
 #: searx/webapp.py
+msgid "Preparing the model"
+msgstr "Подготовка модели"
+
+#: searx/webapp.py
+msgid "Generating the answer"
+msgstr "Генерация ответа"
+
+#: searx/webapp.py
+msgid "Try again"
+msgstr "Повторить"
+
+#: searx/webapp.py
+msgid "Sources"
+msgstr "Источники"
+
+#: searx/webapp.py
+msgid "Still here. The model is big, not stuck."
+msgstr "Всё в порядке: модель большая, но не зависла."
+
+#: searx/webapp.py
+msgid "Large downloads happen once, then it is cached."
+msgstr "Крупная загрузка выполняется один раз, дальше модель берётся из кэша."
+
+#: searx/webapp.py
+msgid "Your GPU is warming up."
+msgstr "Видеокарта разогревается."
+
+#: searx/webapp.py
+msgid "Good answers take a moment."
+msgstr "Хорошие ответы требуют времени."
+
+#: searx/webapp.py
+msgid "Almost there. Probably."
+msgstr "Почти готово. Наверное."
+
+#: searx/webapp.py
 msgid "Generate AI answer"
 msgstr "Сгенерировать ИИ-ответ"
 

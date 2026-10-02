@@ -9,6 +9,12 @@ export type Tier = {
   dtype: "q4" | "q4f16";
   /** approximate download size, shown to the user before the click */
   size: string;
+  /**
+   * Approximate download size in bytes. Files are discovered while downloading
+   * (small configs first), so the real total is not known upfront; this keeps
+   * the percentage from reaching 100% early.
+   */
+  bytes: number;
   /** small model: answers are noticeably less reliable, warn the user */
   compact?: boolean;
   /**
@@ -37,10 +43,17 @@ export const TIERS: Record<TierKey, Tier> = {
     model: "onnx-community/gemma-3-1b-it-ONNX",
     dtype: "q4",
     size: "~1 GB",
+    bytes: 1_000_000_000,
     compact: true,
     minBufferSize: 512 * MiB
   },
-  full: { model: "onnx-community/gemma-4-E2B-it-ONNX", dtype: "q4f16", size: "~3.2 GB", minBufferSize: 2048 * MiB }
+  full: {
+    model: "onnx-community/gemma-4-E2B-it-ONNX",
+    dtype: "q4f16",
+    size: "~3.2 GB",
+    bytes: 3_200_000_000,
+    minBufferSize: 2048 * MiB
+  }
 };
 
 const MOBILE_UA = /Mobi|Android/i;

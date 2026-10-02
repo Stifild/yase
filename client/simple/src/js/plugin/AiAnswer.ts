@@ -26,6 +26,38 @@ const MIN_ANSWER = 80;
 const CITATION_SPLIT = /(\[\d+(?:\s*[,;]\s*\d+)*\])/;
 const CITATION = /^\[(\d+(?:\s*[,;]\s*\d+)*)\]$/;
 const NOT_DIGITS = /\D+/;
+const CITATION_GLOBAL = /\[(\d+(?:\s*[,;]\s*\d+)*)\]/g;
+const WWW_PREFIX = /^www\./;
+
+// a citation still being streamed, e.g. "[1" or "[1, "
+const OPEN_CITATION = /\[[\d\s,;]*$/;
+
+let greeted = false;
+
+// click the spark this many times within this many ms for a surprise
+const SPARK_CLICKS = 5;
+const SPARK_WINDOW = 2000;
+const SPARK_COUNT = 14;
+
+/** The spark changes with the date or the hour. */
+const sparkGlyph = (): string => {
+  const now = new Date();
+  const day = `${now.getMonth() + 1}-${now.getDate()}`;
+  if (day === "10-31") return "🎃";
+  if (day === "12-31" || day === "1-1") return "🎆";
+  if (day === "4-1") return "🙃";
+  if (now.getHours() < 5) return "☾";
+  return "✦";
+};
+
+const RETRY_JOKES = ["", "Try again (third time lucky?)", "Have you tried turning it off and on again?"];
+
+// pause after the last file completes before the download counts as finished
+const SETTLE_MS = 1500;
+const PATIENCE_AFTER = 15;
+const PATIENCE_EVERY = 7;
+
+const ANSWER_42 = /\b42\b|смысл жизни|meaning of life/i;
 
 const CYRILLIC = /\p{Script=Cyrillic}/u;
 
@@ -67,8 +99,33 @@ export default class AiAnswer extends Plugin {
   }
 
   protected async post({ support, sources }: Prepared): Promise<void> {
-    const card = document.createElement("div");
+    const card = document.createElement("section");
     card.className = "ai-answer";
+    card.setAttribute("aria-label", t("ai_answer_title", "AI answer"));
+
+    const header = document.createElement("header");
+    header.className = "ai-answer-header";
+    const title = document.createElement("span");
+    title.className = "ai-answer-title";
+    const spark = document.createElement("span");
+    spark.className = "ai-answer-spark";
+    spark.setAttribute("aria-hidden", "true");
+    spark.textContent = sparkGlyph();
+    const heading = ANSWER_42.test(getElement<HTMLInputElement>("q").value)
+      ? "Don't panic"
+      : t("ai_answer_title", "AI answer");
+    title.append(spark, heading);
+    header.append(title);
+    AiAnswer.armSpark(spark, header);
+
+    if (!greeted) {
+      greeted = true;
+      console.info(
+        "%c✦ YASE%c The model runs in your browser: your query and results never leave this tab.",
+        "color:#5200f6;font-weight:bold",
+        ""
+      );
+    }
 
     const button = document.createElement("button");
     button.type = "button";
@@ -98,7 +155,7 @@ export default class AiAnswer extends Plugin {
     // at least one tier is supported, otherwise run() returned nothing
     select.value = pickTier(support) ?? "basic";
 
-    const hint = document.createElement("span");
+    const hint = document.createElement("p");
     hint.className = "ai-answer-hint";
     const updateHint = (): void => {
       hint.textContent = t(
@@ -117,19 +174,64 @@ export default class AiAnswer extends Plugin {
     controls.className = "ai-answer-controls";
     controls.append(button, select);
 
-    card.append(controls, hint);
+    const setup = document.createElement("div");
+    setup.className = "ai-answer-setup";
+    setup.append(controls, hint);
+
+    const body = document.createElement("div");
+    body.className = "ai-answer-body";
+
+    card.append(header, setup, body);
     appendAnswerElement(card);
 
     button.addEventListener(
       "click",
       () => {
         const tier: Tier = TIERS[select.value as TierKey];
-        controls.remove();
-        hint.remove();
-        AiAnswer.generate(card, tier, sources);
+        setup.remove();
+
+        const badge = document.createElement("span");
+        badge.className = "ai-answer-badge";
+        badge.textContent = labels[select.value as TierKey];
+        badge.title = "Runs on your GPU. Your fans may disagree.";
+        header.append(badge);
+
+        AiAnswer.generate(body, tier, sources);
       },
       { once: true }
     );
+  }
+
+  /** Easter egg: a quick burst of sparks when the title spark is clicked repeatedly. */
+  private static armSpark(spark: HTMLElement, header: HTMLElement): void {
+    let clicks: number[] = [];
+
+    spark.addEventListener("click", () => {
+      const now = Date.now();
+      clicks = [...clicks.filter((time) => now - time < SPARK_WINDOW), now];
+      if (clicks.length < SPARK_CLICKS) return;
+      clicks = [];
+
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      spark.classList.remove("ai-answer-spark-spin");
+      void spark.offsetWidth; // restart the animation
+      spark.classList.add("ai-answer-spark-spin");
+
+      for (let i = 0; i < SPARK_COUNT; i += 1) {
+        const angle = (i / SPARK_COUNT) * 2 * Math.PI;
+        const distance = 40 + Math.random() * 50;
+        const particle = document.createElement("span");
+        particle.className = "ai-answer-particle";
+        particle.setAttribute("aria-hidden", "true");
+        particle.textContent = sparkGlyph();
+        particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+        particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+        particle.style.setProperty("--hue", String(Math.round(Math.random() * 360)));
+        particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        header.append(particle);
+      }
+    });
   }
 
   private static collectSources(): Source[] {
@@ -169,17 +271,65 @@ export default class AiAnswer extends Plugin {
     ];
   }
 
-  private static generate(card: HTMLElement, tier: Tier, sources: Source[]): void {
-    const status = document.createElement("progress");
-    status.className = "ai-answer-progress";
-    status.max = 1;
+  private static generate(body: HTMLElement, tier: Tier, sources: Source[], attempt = 0): void {
+    body.replaceChildren();
+    body.removeAttribute("data-state");
+    body.dataset.state = "loading";
 
-    const statusText = document.createElement("span");
-    statusText.className = "ai-answer-hint";
-    statusText.textContent = t("ai_answer_loading", "Loading the model");
+    const status = document.createElement("div");
+    status.className = "ai-answer-status";
+    status.setAttribute("role", "status");
+
+    // no data yet (or only post-download setup left): "indeterminate" so it never looks frozen
+    const progress = document.createElement("div");
+    progress.className = "ai-answer-progress";
+    progress.setAttribute("role", "progressbar");
+    progress.setAttribute("aria-valuemin", "0");
+    progress.setAttribute("aria-valuemax", "100");
+    progress.dataset.indeterminate = "";
+    const fill = document.createElement("span");
+    progress.append(fill);
+
+    const stepLabels = [
+      t("ai_answer_loading", "Loading the model"),
+      t("ai_answer_step_prepare", "Preparing the model"),
+      t("ai_answer_step_generate", "Generating the answer")
+    ];
+    const steps = document.createElement("ol");
+    steps.className = "ai-answer-steps";
+    const labels: HTMLElement[] = [];
+    for (const label of stepLabels) {
+      const li = document.createElement("li");
+      const icon = document.createElement("span");
+      icon.className = "ai-answer-step-icon";
+      icon.setAttribute("aria-hidden", "true");
+      const text = document.createElement("span");
+      text.textContent = label;
+      labels.push(text);
+      li.append(icon, text);
+      steps.append(li);
+    }
+
+    // everything before `current` is done, `current` is active, the rest pending
+    const setStep = (current: number): void => {
+      steps.querySelectorAll("li").forEach((li, i) => {
+        let state = "pending";
+        if (i < current) state = "done";
+        else if (i === current) state = "active";
+        li.dataset.state = state;
+      });
+      progress.hidden = current > 1;
+    };
+    setStep(0);
+
+    status.append(steps, progress);
 
     const output = document.createElement("p");
     output.className = "ai-answer-text";
+    output.setAttribute("aria-live", "polite");
+
+    const footer = document.createElement("div");
+    footer.className = "ai-answer-footer";
 
     const disclaimer = document.createElement("small");
     disclaimer.className = "ai-answer-hint";
@@ -191,15 +341,104 @@ export default class AiAnswer extends Plugin {
       )}`;
     }
 
-    card.append(status, statusText, output, disclaimer);
+    body.append(status, output);
+
+    // reassurance for slow downloads, so a long wait never looks like a hang
+    const patience = document.createElement("small");
+    patience.className = "ai-answer-hint ai-answer-patience";
+    let waited = 0;
+    let shownMessage = "";
+
+    // download tracking: see the "progress" handler
+    let percent = 0;
+    let downloaded = false;
+    let settleTimer = 0;
+
+    // the old phrase floats away while the new one slides in
+    const swapPatience = (message: string): void => {
+      if (message === shownMessage) return;
+      shownMessage = message;
+
+      for (const old of patience.children) {
+        old.classList.add("leaving");
+        old.addEventListener("animationend", () => old.remove(), { once: true });
+      }
+
+      const next = document.createElement("span");
+      next.className = "ai-answer-patience-text";
+      next.textContent = message;
+      patience.append(next);
+    };
+    const timer = window.setInterval(() => {
+      waited += 1;
+      if (waited < PATIENCE_AFTER) return;
+      if (!patience.isConnected) status.append(patience);
+      const messages = [
+        t("ai_answer_patience_1", "Still here. The model is big, not stuck."),
+        t("ai_answer_patience_2", "Large downloads happen once, then it is cached."),
+        t("ai_answer_patience_3", "Your GPU is warming up."),
+        t("ai_answer_patience_4", "Good answers take a moment."),
+        t("ai_answer_patience_5", "Almost there. Probably.")
+      ];
+      swapPatience(messages[Math.floor((waited - PATIENCE_AFTER) / PATIENCE_EVERY) % messages.length] ?? "");
+    }, 1000);
+    const stopWaiting = (): void => {
+      window.clearInterval(timer);
+      patience.remove();
+    };
 
     const worker = new Worker(new URL("./ai-answer/worker.ts", import.meta.url), { type: "module" });
     let text = "";
 
+    // Tokens arrive in uneven bursts; reveal them frame by frame instead, the
+    // further behind the display is, the more characters per frame.
+    let shown = 0;
+    let frame = 0;
+    let finished = false;
+
+    const finish = (): void => {
+      body.dataset.state = "done";
+      delete output.dataset.typing;
+      AiAnswer.renderSources(footer, output.textContent ?? "", sources);
+      footer.append(disclaimer);
+      body.append(footer);
+    };
+
+    const pump = (): void => {
+      frame = 0;
+      const backlog = text.length - shown;
+      if (backlog > 0) {
+        shown += Math.max(1, Math.ceil(backlog / 12));
+        const visible = text.slice(0, shown);
+        AiAnswer.render(output, finished ? visible : visible.replace(OPEN_CITATION, ""), sources);
+        output.dataset.typing = "";
+        frame = requestAnimationFrame(pump);
+      } else {
+        // caught up: the caret blinks while waiting for the model
+        delete output.dataset.typing;
+        if (finished) finish();
+      }
+    };
+
     const fail = (): void => {
-      status.remove();
-      statusText.textContent = t("ai_answer_error", "Could not generate an answer");
+      window.clearTimeout(settleTimer);
+      stopWaiting();
+      cancelAnimationFrame(frame);
       worker.terminate();
+      status.replaceChildren();
+      if (!status.isConnected) body.append(status);
+      body.dataset.state = "error";
+
+      const message = document.createElement("span");
+      message.textContent = t("ai_answer_error", "Could not generate an answer");
+
+      const retry = document.createElement("button");
+      retry.type = "button";
+      retry.className = "ai-answer-button ai-answer-retry";
+      retry.textContent = RETRY_JOKES[Math.min(attempt, RETRY_JOKES.length - 1)] || t("ai_answer_retry", "Try again");
+      retry.addEventListener("click", () => AiAnswer.generate(body, tier, sources, attempt + 1), { once: true });
+
+      status.append(message, retry);
     };
 
     worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
@@ -208,21 +447,50 @@ export default class AiAnswer extends Plugin {
       // biome-ignore lint/style/useDefaultSwitchClause: message type is exhaustively typed
       switch (message.type) {
         case "progress": {
-          if (message.total > 0) status.value = message.loaded / message.total;
+          if (downloaded || message.total <= 0) break;
+
+          if (message.loaded < message.total) {
+            // more bytes are coming: not finished, whatever a pause suggested
+            window.clearTimeout(settleTimer);
+            const ratio = message.loaded / Math.max(message.total, tier.bytes);
+            percent = Math.max(percent, Math.min(Math.floor(ratio * 100), 99));
+            delete progress.dataset.indeterminate;
+            fill.style.width = `${percent}%`;
+            progress.setAttribute("aria-valuenow", String(percent));
+            if (labels[0]) labels[0].textContent = `${stepLabels[0]} · ${percent}%`;
+          } else {
+            // every file seen so far is complete; wait a moment in case the
+            // next (large) file has not started yet
+            window.clearTimeout(settleTimer);
+            settleTimer = window.setTimeout(() => {
+              downloaded = true;
+              progress.dataset.indeterminate = "";
+              if (labels[0]) labels[0].textContent = stepLabels[0] ?? "";
+              setStep(1);
+            }, SETTLE_MS);
+          }
           break;
         }
         case "ready": {
-          status.remove();
-          statusText.remove();
+          window.clearTimeout(settleTimer);
+          downloaded = true;
+          if (labels[0]) labels[0].textContent = stepLabels[0] ?? "";
+          setStep(2);
+          body.dataset.state = "generating";
           break;
         }
         case "token": {
+          stopWaiting();
+          status.remove();
           text += message.text;
-          AiAnswer.render(output, text, sources);
+          if (!frame) frame = requestAnimationFrame(pump);
           break;
         }
         case "done": {
           worker.terminate();
+          finished = true;
+          // let the reveal catch up before the footer appears
+          if (!frame) pump();
           break;
         }
         case "error": {
@@ -236,6 +504,45 @@ export default class AiAnswer extends Plugin {
 
     const request: WorkerRequest = { type: "generate", tier: tier, messages: AiAnswer.buildMessages(sources) };
     worker.postMessage(request);
+  }
+
+  /** Lists the sources the answer actually cites, in order of first mention. */
+  private static renderSources(target: HTMLElement, text: string, sources: Source[]): void {
+    const cited = new Set<number>();
+    for (const match of text.matchAll(CITATION_GLOBAL)) {
+      for (const number of (match[1] ?? "").split(NOT_DIGITS)) {
+        if (sources[Number(number) - 1]) cited.add(Number(number));
+      }
+    }
+    if (cited.size === 0) return;
+
+    const list = document.createElement("ul");
+    list.className = "ai-answer-sources";
+    list.setAttribute("aria-label", t("ai_answer_sources", "Sources"));
+
+    for (const number of cited) {
+      const source = sources[number - 1];
+      if (!source) continue;
+
+      let host = source.url;
+      try {
+        host = new URL(source.url).hostname.replace(WWW_PREFIX, "");
+      } catch {
+        // keep the raw URL
+      }
+
+      const a = document.createElement("a");
+      a.href = source.url;
+      a.title = source.title;
+      a.rel = "noopener noreferrer";
+      a.textContent = `[${number}] ${host}`;
+
+      const li = document.createElement("li");
+      li.append(a);
+      list.append(li);
+    }
+
+    target.append(list);
   }
 
   /**

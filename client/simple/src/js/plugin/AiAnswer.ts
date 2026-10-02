@@ -22,8 +22,10 @@ type Prepared = {
 const TRAILING_REFUSAL = /\s*The sources do not contain a clear[^.]*\.?\s*$/i;
 const MIN_ANSWER = 80;
 
-const CITATION_SPLIT = /(\[\d+\])/;
-const CITATION = /^\[(\d+)\]$/;
+// "[1]" and also groups such as "[1, 2]" or "[1; 3]"
+const CITATION_SPLIT = /(\[\d+(?:\s*[,;]\s*\d+)*\])/;
+const CITATION = /^\[(\d+(?:\s*[,;]\s*\d+)*)\]$/;
+const NOT_DIGITS = /\D+/;
 
 const CYRILLIC = /\p{Script=Cyrillic}/u;
 
@@ -249,25 +251,31 @@ export default class AiAnswer extends Plugin {
 
     for (const part of shown.split(CITATION_SPLIT)) {
       const match = CITATION.exec(part);
-      const source = match?.[1] ? sources[Number(match[1]) - 1] : undefined;
-
-      if (match && !source) {
-        // citation of a source that does not exist: the model made it up
-        continue;
-      }
-
-      if (!source) {
+      if (!match?.[1]) {
         nodes.push(part);
         continue;
       }
 
-      const a = document.createElement("a");
-      a.href = source.url;
-      a.title = source.title;
-      a.rel = "noopener noreferrer";
-      a.className = "ai-answer-cite";
-      a.textContent = part;
-      nodes.push(a);
+      // one link per number; numbers of nonexistent sources are made up by
+      // the model and dropped, and so is a citation left without any
+      const links: HTMLAnchorElement[] = [];
+      for (const number of match[1].split(NOT_DIGITS)) {
+        const source = sources[Number(number) - 1];
+        if (!source) continue;
+
+        const a = document.createElement("a");
+        a.href = source.url;
+        a.title = source.title;
+        a.rel = "noopener noreferrer";
+        a.className = "ai-answer-cite";
+        a.textContent = `[${number}]`;
+        links.push(a);
+      }
+
+      links.forEach((link, i) => {
+        if (i > 0) nodes.push(", ");
+        nodes.push(link);
+      });
     }
 
     target.replaceChildren(...nodes);

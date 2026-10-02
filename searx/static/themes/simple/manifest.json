@@ -3,6 +3,13 @@
     "file": "chunk/BuurKv-k.min.js",
     "name": "plugin"
   },
+  "_CY6dPoBI.min.js": {
+    "file": "chunk/CY6dPoBI.min.js",
+    "name": "appendanswerelement",
+    "imports": [
+      "_DcK-mo-Y.min.js"
+    ]
+  },
   "_DK4yUVpy.min.js": {
     "file": "chunk/DK4yUVpy.min.js",
     "name": "assertelement"
@@ -22,6 +29,7 @@
     "dynamicImports": [
       "src/js/plugin/MapView.ts",
       "src/js/plugin/InfiniteScroll.ts",
+      "src/js/plugin/AiAnswer.ts",
       "src/js/plugin/Calculator.ts",
       "src/js/main/keyboard.ts",
       "src/js/main/search.ts",
@@ -80,14 +88,27 @@
       "_DcK-mo-Y.min.js"
     ]
   },
+  "src/js/plugin/AiAnswer.ts": {
+    "file": "chunk/pywIHr3G.min.js",
+    "name": "aianswer",
+    "src": "src/js/plugin/AiAnswer.ts",
+    "isDynamicEntry": true,
+    "imports": [
+      "_BuurKv-k.min.js",
+      "src/js/index.ts",
+      "_DcK-mo-Y.min.js",
+      "_CY6dPoBI.min.js"
+    ]
+  },
   "src/js/plugin/Calculator.ts": {
-    "file": "chunk/BhYx0_Gb.min.js",
+    "file": "chunk/Bl2Vtgz_.min.js",
     "name": "calculator",
     "src": "src/js/plugin/Calculator.ts",
     "isDynamicEntry": true,
     "imports": [
       "_BuurKv-k.min.js",
-      "_DcK-mo-Y.min.js"
+      "_DcK-mo-Y.min.js",
+      "_CY6dPoBI.min.js"
     ]
   },
   "src/js/plugin/InfiniteScroll.ts": {

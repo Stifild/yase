@@ -23,6 +23,7 @@
     "not dead"
   ],
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "ionicons": "^8.1.0",
     "normalize.css": "8.0.1",
     "ol": "^10.10.0",

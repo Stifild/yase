@@ -11,7 +11,19 @@ export type Tier = {
   size: string;
   /** small model: answers are noticeably less reliable, warn the user */
   compact?: boolean;
+  /**
+   * Minimum `maxBufferSize` of the WebGPU adapter, in bytes.
+   *
+   * @remarks
+   * WebGPU does not report the amount of VRAM. The adapter limits are the
+   * only signal: the spec default (256 MiB) means a weak or restricted GPU,
+   * while capable desktop GPUs usually report 2-4 GiB. These are conservative
+   * heuristics, not measured requirements: tune them on real devices.
+   */
+  minBufferSize: number;
 };
+
+const MiB = 1024 * 1024;
 
 /**
  * Model tiers.
@@ -21,15 +33,23 @@ export type Tier = {
  * garbage (onnxruntime#26732), hence `q4`.
  */
 export const TIERS: Record<TierKey, Tier> = {
-  basic: { model: "onnx-community/gemma-3-1b-it-ONNX", dtype: "q4", size: "~1 GB", compact: true },
-  full: { model: "onnx-community/gemma-4-E2B-it-ONNX", dtype: "q4f16", size: "~3.2 GB" }
+  basic: {
+    model: "onnx-community/gemma-3-1b-it-ONNX",
+    dtype: "q4",
+    size: "~1 GB",
+    compact: true,
+    minBufferSize: 512 * MiB
+  },
+  full: { model: "onnx-community/gemma-4-E2B-it-ONNX", dtype: "q4f16", size: "~3.2 GB", minBufferSize: 2048 * MiB }
 };
 
 const MOBILE_UA = /Mobi|Android/i;
 const STORAGE_KEY = "aiAnswer.tier";
 
 type NavigatorGPU = Navigator & {
-  gpu?: { requestAdapter(): Promise<{ features: Set<string> } | null> };
+  gpu?: {
+    requestAdapter(): Promise<{ features: Set<string>; limits: { maxBufferSize: number } } | null>;
+  };
   deviceMemory?: number;
 };
 
@@ -37,7 +57,7 @@ export type Support = Record<TierKey, boolean>;
 
 /**
  * Which tiers can run on this device. Both `false` means the feature should
- * stay hidden (no WebGPU).
+ * stay hidden (no WebGPU, or a GPU too limited even for the basic tier).
  */
 export const detectSupport = async (): Promise<Support> => {
   const none: Support = { basic: false, full: false };
@@ -53,9 +73,12 @@ export const detectSupport = async (): Promise<Support> => {
     // deviceMemory is capped at 8 and only exists in Chromium
     const memory = nav.deviceMemory ?? 8;
 
+    const { maxBufferSize } = adapter.limits;
+    console.debug(`[PLUGIN] aiAnswer: WebGPU maxBufferSize = ${Math.round(maxBufferSize / MiB)} MiB`);
+
     return {
-      basic: true,
-      full: !mobile && memory >= 8 && adapter.features.has("shader-f16")
+      basic: maxBufferSize >= TIERS.basic.minBufferSize,
+      full: !mobile && memory >= 8 && adapter.features.has("shader-f16") && maxBufferSize >= TIERS.full.minBufferSize
     };
   } catch {
     return none;

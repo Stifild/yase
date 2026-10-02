@@ -87,9 +87,11 @@
       transform 0.1s;
     .rounded-corners;
 
-    &:hover {
-      filter: brightness(1.12);
-      transform: translateY(-1px);
+    @media (hover: hover) {
+      &:hover {
+        filter: brightness(1.12);
+        transform: translateY(-1px);
+      }
     }
 
     &:active {
@@ -417,5 +419,72 @@
   #answers .ai-answer .ai-answer-progress[data-indeterminate] > span {
     width: 100%;
     opacity: 0.4;
+  }
+}
+
+// phones
+@media screen and (max-width: @phone) {
+  // #results has no side margin here; give the card the same inset as results
+  #answers:has(> .ai-answer) {
+    margin: 1rem 2%;
+  }
+
+  #answers .ai-answer {
+    padding-left: 0.7rem;
+    overflow-x: clip; // the spark burst must not widen the page
+
+    .ai-answer-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .ai-answer-button,
+    .ai-answer-model {
+      width: 100%;
+      min-height: 2.75rem; // comfortable touch target
+    }
+
+    // 16px keeps iOS from zooming the page when the select gets focus
+    .ai-answer-model {
+      font-size: 16px;
+      text-overflow: ellipsis;
+    }
+
+    .ai-answer-steps {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .ai-answer-progress {
+      flex-basis: 100%;
+      height: 0.5rem;
+    }
+
+    .ai-answer-text {
+      font-size: 1.05em;
+      line-height: 1.6;
+    }
+
+    .ai-answer-sources {
+      flex-direction: column;
+
+      a {
+        display: block;
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9em;
+      }
+    }
+
+    .ai-answer-retry {
+      width: 100%;
+    }
+  }
+}
+
+// touch screens: the tiny superscript [n] needs a bigger hit area
+@media (pointer: coarse) {
+  #answers .ai-answer .ai-answer-cite {
+    padding: 0.35em 0.3em;
+    margin: -0.35em 0;
   }
 }

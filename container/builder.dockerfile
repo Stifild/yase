@@ -24,7 +24,7 @@ COPY --exclude=./searx/version_frozen.py ./searx/ ./searx/
 RUN set -eux -o pipefail; \
     python -m compileall -q -f -j 0 --invalidation-mode=unchecked-hash ./searx/; \
     find ./searx/static/ -type f \
-    \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.svg" \) \
+    \( -name "*.html" -o -name "*.css" -o -name "*.js" -o -name "*.svg" -o -name "*.wasm" \) \
     -exec gzip -9 -k {} + \
     -exec brotli -9 -k {} + \
     -exec gzip --test {}.gz + \

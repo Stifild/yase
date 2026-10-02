@@ -28,6 +28,13 @@ ready(() => {
     });
   }
 
+  if (settings.plugins?.includes("aiAnswer")) {
+    load(() => import("./plugin/AiAnswer.ts").then(({ default: Plugin }) => new Plugin()), {
+      on: "endpoint",
+      where: [Endpoints.results]
+    });
+  }
+
   if (settings.plugins?.includes("calculator")) {
     load(() => import("./plugin/Calculator.ts").then(({ default: Plugin }) => new Plugin()), {
       on: "endpoint",

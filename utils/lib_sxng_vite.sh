@@ -38,7 +38,7 @@ vite.simple.build() {
         build_msg SIMPLE "run build of theme from: ${VITE_SIMPLE_THEME}"
 
         pushd "${VITE_SIMPLE_THEME}"
-        npm install
+        ONNXRUNTIME_NODE_INSTALL=skip npm install
         npm run build
         popd &>/dev/null
     )
@@ -53,7 +53,7 @@ vite.simple.analyze() {
         build_msg SIMPLE "run analyze of theme from: ${VITE_SIMPLE_THEME}"
 
         pushd "${VITE_SIMPLE_THEME}"
-        npm install
+        ONNXRUNTIME_NODE_INSTALL=skip npm install
         VITE_BUNDLE_ANALYZE=true npm run build
         popd &>/dev/null
     )

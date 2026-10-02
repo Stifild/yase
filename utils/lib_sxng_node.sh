@@ -27,7 +27,9 @@ node.env() {
     (
         set -e
         build_msg INSTALL "[npm] ./client/simple/package.json"
-        npm --prefix client/simple install
+        # onnxruntime-node (pulled in by transformers.js) downloads hundreds of MB
+        # of native/CUDA binaries on install; the browser-only theme never uses it.
+        ONNXRUNTIME_NODE_INSTALL=skip npm --prefix client/simple install
     )
     dump_return $?
 }

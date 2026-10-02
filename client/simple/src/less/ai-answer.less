@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+#answers .ai-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .ai-answer-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ai-answer-model {
+    max-width: 100%;
+  }
+
+  .ai-answer-button {
+    padding: 0.4rem 0.9rem;
+    border: 0;
+    cursor: pointer;
+    background: var(--color-btn-background);
+    color: var(--color-btn-font);
+    .rounded-corners;
+  }
+
+  .ai-answer-progress {
+    width: 100%;
+  }
+
+  .ai-answer-text {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .ai-answer-hint {
+    font-size: 0.85em;
+    opacity: 0.7;
+  }
+
+  .ai-answer-cite {
+    text-decoration: none;
+    font-size: 0.85em;
+    vertical-align: super;
+  }
+}

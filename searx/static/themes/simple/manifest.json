@@ -89,7 +89,7 @@
     ]
   },
   "src/js/plugin/AiAnswer.ts": {
-    "file": "chunk/DBGp6lKL.min.js",
+    "file": "chunk/8_D3AXFm.min.js",
     "name": "aianswer",
     "src": "src/js/plugin/AiAnswer.ts",
     "isDynamicEntry": true,
@@ -138,6 +138,14 @@
       "sxng-mapview.min.css"
     ]
   },
+  "src/less/fonts/brygada-1918-cyrillic-400.woff2": {
+    "file": "sxng-brygada-1918-cyrillic-400.woff2",
+    "src": "src/less/fonts/brygada-1918-cyrillic-400.woff2"
+  },
+  "src/less/fonts/brygada-1918-latin-400.woff2": {
+    "file": "sxng-brygada-1918-latin-400.woff2",
+    "src": "src/less/fonts/brygada-1918-latin-400.woff2"
+  },
   "src/less/noscript.less": {
     "file": "sxng-noscript.min.css",
     "name": "noscript",
@@ -163,7 +171,11 @@
       "ltr.css"
     ],
     "src": "src/less/style-ltr.less",
-    "isEntry": true
+    "isEntry": true,
+    "assets": [
+      "sxng-brygada-1918-cyrillic-400.woff2",
+      "sxng-brygada-1918-latin-400.woff2"
+    ]
   },
   "src/less/style-rtl.less": {
     "file": "sxng-rtl.min.css",
@@ -172,6 +184,10 @@
       "rtl.css"
     ],
     "src": "src/less/style-rtl.less",
-    "isEntry": true
+    "isEntry": true,
+    "assets": [
+      "sxng-brygada-1918-cyrillic-400.woff2",
+      "sxng-brygada-1918-latin-400.woff2"
+    ]
   }
 }

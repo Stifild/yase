@@ -8,6 +8,15 @@
 
 /// Light Theme
 :root {
+  /// Neo-brutalism (outline, hard shadow, mint fill)
+  --color-nb-outline: #000;
+  --color-nb-shadow: #000;
+  --color-nb-fill: #d9ffc3;
+  --color-nb-fill-font: #000;
+  --nb-track: rgb(0 0 0 / 22%);
+  --nb-accent-on-fill: #5200f6;
+  --nb-accent-on-fill-ink: #fff;
+  --nb-logo-filter: drop-shadow(-2px 0 #5200f6) drop-shadow(2px 0 #256400);
   /// Base Colors
   --color-base-font: #444;
   --color-base-font-rgb: 68, 68, 68;
@@ -132,6 +141,15 @@
 }
 
 .dark-themes() {
+  /// Neo-brutalism (outline, hard shadow, mint fill)
+  --color-nb-outline: #fff;
+  --color-nb-shadow: #5200f6;
+  --color-nb-fill: #256400;
+  --color-nb-fill-font: #d9ffc3;
+  --nb-track: rgb(255 255 255 / 25%);
+  --nb-accent-on-fill: #c3adff;
+  --nb-accent-on-fill-ink: #0e0e0e;
+  --nb-logo-filter: invert(1) drop-shadow(-2px 0 #5200f6) drop-shadow(2px 0 #d9ffc3);
   /// Base Colors
   --color-base-font: #bbb;
   --color-base-font-rgb: 187, 187, 187;
@@ -249,7 +267,7 @@
   .page_with_header .logo,
   .index .title,
   #search_logo svg {
-    filter: invert(1);
+    filter: var(--nb-logo-filter);
   }
 }
 

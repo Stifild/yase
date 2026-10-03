@@ -1,0 +1,226 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+// YASE neo-brutalism: outlined blocks, mint fills, hard shadows only on
+// primary controls (search, answer, active category). Regular results are
+// outlined but flat.
+
+@font-face {
+  font-family: "Brygada 1918";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/brygada-1918-cyrillic-400.woff2") format("woff2");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: "Brygada 1918";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/brygada-1918-latin-400.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@nb-serif: "Brygada 1918", Georgia, "Times New Roman", serif;
+@nb-border: 2px solid var(--color-nb-outline);
+@nb-shadow: 3px 3px 0 var(--color-nb-shadow);
+
+.search_box {
+  border: @nb-border;
+  border-radius: 0.8rem;
+  box-shadow: @nb-shadow;
+}
+
+// no overflow:hidden on the box: the autocomplete dropdown lives inside it and
+// would be clipped (it flickered while typing). Inner corners are the outer
+// radius minus the 2px border instead, so there is no gap on hover.
+#q {
+  border-radius: calc(0.8rem - 2px) 0 0 calc(0.8rem - 2px);
+}
+
+#send_search {
+  border-radius: 0 calc(0.8rem - 2px) calc(0.8rem - 2px) 0;
+  background: var(--color-btn-background);
+  color: var(--color-btn-font);
+  border-left: @nb-border;
+  font-weight: 500;
+
+  &:hover {
+    background: var(--color-nb-fill);
+    color: var(--color-nb-fill-font);
+  }
+}
+
+// category tabs become pills
+.category_checkbox label,
+button.category_button {
+  padding: 0.2rem 0.85rem;
+  border: 1.5px solid var(--color-nb-outline);
+  border-radius: 1.2rem;
+  font-size: 0.9em;
+}
+
+.category_checkbox,
+.category_button {
+  margin-right: 0.4rem;
+}
+
+.category_checkbox input[type="checkbox"]:checked + label,
+button.category_button.selected {
+  background: var(--color-nb-fill);
+  color: var(--color-nb-fill-font);
+  border: @nb-border;
+  box-shadow: 2px 2px 0 var(--color-nb-shadow);
+  font-weight: 500;
+}
+
+// instant answer: the one highlighted block
+#answers {
+  background: var(--color-nb-fill);
+  color: var(--color-nb-fill-font);
+  border: @nb-border;
+  border-radius: 12px;
+  box-shadow: 4px 4px 0 var(--color-nb-shadow);
+
+  a {
+    color: var(--color-nb-fill-font);
+    text-decoration: underline;
+  }
+}
+
+// regular results and infoboxes: outline, no shadow
+.result,
+#sidebar .infobox {
+  background: var(--color-result-background);
+  border: @nb-border;
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.result {
+  margin: 0 0 0.9rem 0;
+}
+
+// serif only for result titles and infobox headings
+.result h3 a,
+#sidebar .infobox h2 {
+  font-family: @nb-serif;
+  font-weight: 400;
+}
+
+// logo: hard two-colour glitch offset (see --nb-logo-filter)
+#search_logo svg {
+  filter: var(--nb-logo-filter);
+}
+
+// no icons inside category pills
+.category_checkbox label svg,
+button.category_button svg,
+.category_checkbox label .sxng-icon-set,
+button.category_button .sxng-icon-set {
+  display: none;
+}
+
+footer {
+  border-top: none;
+}
+
+// back-to-top: same outlined language, clear of the result cards
+#backToTop {
+  margin-left: 0.8rem;
+  background: var(--color-nb-fill);
+  border: @nb-border;
+  border-radius: 12px;
+  box-shadow: 2px 2px 0 var(--color-nb-shadow);
+
+  a,
+  a:visited,
+  a:hover,
+  a:active {
+    color: var(--color-nb-fill-font);
+  }
+}
+
+// AI answer lives on the mint block: use a neutral track so the violet
+// spinner, bar and ring stay visible instead of merging with the fill
+#answers .ai-answer {
+  border-left: 3px solid var(--color-nb-fill-font);
+
+  .ai-answer-spark {
+    color: var(--color-nb-fill-font);
+  }
+
+  .ai-answer-step-icon {
+    border-width: 3px;
+    border-color: var(--nb-track);
+  }
+
+  .ai-answer-steps li[data-state="active"] .ai-answer-step-icon {
+    border-top-color: var(--nb-accent-on-fill);
+  }
+
+  .ai-answer-steps li[data-state="done"] .ai-answer-step-icon {
+    background: var(--nb-accent-on-fill);
+    border-color: var(--nb-accent-on-fill);
+
+    &::after {
+      border-color: var(--nb-accent-on-fill-ink);
+    }
+  }
+
+  .ai-answer-progress {
+    background: var(--nb-track);
+
+    > span {
+      background: var(--nb-accent-on-fill);
+    }
+  }
+}
+
+// autocomplete dropdown in the same language (flat, outlined)
+.autocomplete.open {
+  margin-top: 3.8rem;
+  border: @nb-border;
+  border-radius: 12px;
+  box-shadow: @nb-shadow;
+}
+
+// open but still empty (suggestions loading): draw nothing, otherwise the
+// outline and shadow show as a flickering bar under the search box
+.autocomplete.open:has(> ul:empty) {
+  border: 0;
+  box-shadow: none;
+  background: none;
+}
+
+// 404 page: big "Oops." mark, serif heading, outlined link button
+.error-page {
+  margin: 12vh auto 0;
+
+  .error-art {
+    display: block;
+    width: 9rem;
+    height: 9rem;
+    margin: 0 auto 1rem;
+    color: var(--color-nb-outline);
+    filter: drop-shadow(-2px 0 #5200f6) drop-shadow(2px 0 var(--color-url-font));
+  }
+
+  h1 {
+    font-family: @nb-serif;
+    font-weight: 400;
+    margin: 0 0 1rem;
+  }
+
+  p a {
+    display: inline-block;
+    padding: 0.3rem 1rem;
+    border: @nb-border;
+    border-radius: 12px;
+    background: var(--color-nb-fill);
+    color: var(--color-nb-fill-font);
+    box-shadow: 3px 3px 0 var(--color-nb-shadow);
+    font-weight: 500;
+  }
+}

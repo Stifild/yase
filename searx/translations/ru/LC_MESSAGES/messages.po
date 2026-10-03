@@ -1868,7 +1868,7 @@ msgstr "Сгенерировать ИИ-ответ"
 
 #: searx/webapp.py
 msgid "AI runs on your phone and may not work at all, or may make it freeze badly. Continue?"
-msgstr "ИИ работает прямо на телефоне: он может не заработать вовсе или сильно его подвесить. Продолжить?"
+msgstr "ИИ работает прямо на телефоне: он может не заработать вовсе или сильно его нагрузить. Продолжить?"
 
 #: searx/webapp.py
 msgid "Continue anyway"

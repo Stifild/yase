@@ -178,7 +178,18 @@ footer {
 // AI answer lives on the mint block: use a neutral track so the violet
 // spinner, bar and ring stay visible instead of merging with the fill
 #answers .ai-answer {
+  // the card's hairlines default to --color-result-border (#333 in dark),
+  // which vanishes on the green fill: use the neutral track colour instead
+  --color-result-border: var(--nb-track);
   border-left: 3px solid var(--color-nb-fill-font);
+
+  .ai-answer-model {
+    border: 1.5px solid var(--color-nb-fill-font);
+  }
+
+  .ai-answer-hint {
+    opacity: 0.9;
+  }
 
   .ai-answer-spark {
     color: var(--color-nb-fill-font);

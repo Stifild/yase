@@ -181,8 +181,17 @@ footer {
   }
 }
 
-// autocomplete dropdown in the same language (flat, outlined)
+// autocomplete dropdown in the same language (flat, outlined); sized to the
+// search box itself so it never runs off a narrow screen
+.search_box {
+  position: relative;
+}
+
 .autocomplete.open {
+  box-sizing: border-box;
+  left: 0;
+  width: 100%;
+  max-width: none;
   margin-top: 3.8rem;
   border: @nb-border;
   border-radius: 12px;
@@ -242,4 +251,38 @@ footer {
 .index #search {
   box-sizing: border-box;
   padding: 0 1.25rem;
+}
+
+// phones: upstream turns the focused search into a full-screen grey overlay.
+// Keep the outlined box in place instead; suggestions drop down below it.
+@media screen and (max-width: @phone) {
+  #search_view:focus-within {
+    position: static;
+    height: auto;
+    width: auto;
+    z-index: auto;
+    background: none;
+
+    .search_box {
+      border: @nb-border;
+      border-radius: 0.8rem;
+      box-shadow: @nb-shadow;
+
+      #q {
+        border-radius: calc(0.8rem - 2px) 0 0 calc(0.8rem - 2px);
+      }
+
+      #send_search {
+        border-left: @nb-border;
+        border-radius: 0 calc(0.8rem - 2px) calc(0.8rem - 2px) 0;
+      }
+
+      // upstream strips borders from every descendant while focused
+      .autocomplete.open:not(:has(> ul:empty)) {
+        border: @nb-border;
+        border-radius: 12px;
+        box-shadow: @nb-shadow;
+      }
+    }
+  }
 }

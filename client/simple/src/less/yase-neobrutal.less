@@ -534,3 +534,24 @@ details[open] > summary.title::before {
     border-radius: 4px;
   }
 }
+
+// wide layout: the mark spans the three header rows (search, categories,
+// filters) instead of sitting as a 30px icon next to the search box
+@media screen and (min-width: 79.76em) {
+  #search_logo {
+    position: absolute;
+    top: 2rem;
+    left: 1rem;
+    padding: 0;
+    display: block;
+    z-index: 1;
+
+    svg {
+      display: block;
+      flex: none;
+      width: auto;
+      height: 9rem;
+      margin: 0;
+    }
+  }
+}

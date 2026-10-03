@@ -142,9 +142,17 @@
     "file": "sxng-brygada-1918-cyrillic-400.woff2",
     "src": "src/less/fonts/brygada-1918-cyrillic-400.woff2"
   },
+  "src/less/fonts/brygada-1918-cyrillic-700.woff2": {
+    "file": "sxng-brygada-1918-cyrillic-700.woff2",
+    "src": "src/less/fonts/brygada-1918-cyrillic-700.woff2"
+  },
   "src/less/fonts/brygada-1918-latin-400.woff2": {
     "file": "sxng-brygada-1918-latin-400.woff2",
     "src": "src/less/fonts/brygada-1918-latin-400.woff2"
+  },
+  "src/less/fonts/brygada-1918-latin-700.woff2": {
+    "file": "sxng-brygada-1918-latin-700.woff2",
+    "src": "src/less/fonts/brygada-1918-latin-700.woff2"
   },
   "src/less/noscript.less": {
     "file": "sxng-noscript.min.css",
@@ -174,7 +182,9 @@
     "isEntry": true,
     "assets": [
       "sxng-brygada-1918-cyrillic-400.woff2",
-      "sxng-brygada-1918-latin-400.woff2"
+      "sxng-brygada-1918-latin-400.woff2",
+      "sxng-brygada-1918-cyrillic-700.woff2",
+      "sxng-brygada-1918-latin-700.woff2"
     ]
   },
   "src/less/style-rtl.less": {
@@ -187,7 +197,9 @@
     "isEntry": true,
     "assets": [
       "sxng-brygada-1918-cyrillic-400.woff2",
-      "sxng-brygada-1918-latin-400.woff2"
+      "sxng-brygada-1918-latin-400.woff2",
+      "sxng-brygada-1918-cyrillic-700.woff2",
+      "sxng-brygada-1918-latin-700.woff2"
     ]
   }
 }

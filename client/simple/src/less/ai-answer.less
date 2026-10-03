@@ -110,6 +110,32 @@
     outline-offset: 2px;
   }
 
+  // phones: just a small button until the user opts in
+  &.ai-answer-mobile {
+    gap: 0.4rem;
+
+    .ai-answer-small {
+      align-self: flex-start;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.85em;
+    }
+
+    [hidden] {
+      display: none;
+    }
+
+    .ai-answer-warning {
+      margin: 0;
+      font-size: 0.9em;
+    }
+
+    .ai-answer-cancel {
+      background: transparent;
+      color: inherit;
+      border: 1px solid var(--color-result-border);
+    }
+  }
+
   .ai-answer-body {
     display: flex;
     flex-direction: column;
@@ -438,7 +464,7 @@
       align-items: stretch;
     }
 
-    .ai-answer-button,
+    .ai-answer-button:not(.ai-answer-small),
     .ai-answer-model {
       width: 100%;
       min-height: 2.75rem; // comfortable touch target

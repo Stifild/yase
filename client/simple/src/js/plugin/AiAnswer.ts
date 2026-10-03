@@ -4,7 +4,7 @@ import { Plugin } from "../Plugin.ts";
 import { settings } from "../toolkit.ts";
 import { appendAnswerElement } from "../util/appendAnswerElement.ts";
 import { getElement } from "../util/getElement.ts";
-import { detectSupport, pickTier, type Support, saveTier, TIERS, type Tier, type TierKey } from "./ai-answer/models.ts";
+import { detectSupport, isMobile, pickTier, type Support, saveTier, TIERS, type Tier, type TierKey } from "./ai-answer/models.ts";
 import type { ChatMessage, WorkerRequest, WorkerResponse } from "./ai-answer/worker.ts";
 
 type Source = {
@@ -127,80 +127,129 @@ export default class AiAnswer extends Plugin {
       );
     }
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "ai-answer-button";
-    button.textContent = t("ai_answer_button", "Generate AI answer");
-
-    const select = document.createElement("select");
-    select.className = "ai-answer-model";
-    select.setAttribute("aria-label", t("ai_answer_model", "Model"));
-
     const labels: Record<TierKey, string> = {
       lite: t("ai_answer_model_lite", "Lite model"),
       basic: t("ai_answer_model_basic", "Basic model"),
       full: t("ai_answer_model_full", "Full model")
     };
 
-    for (const key of ["lite", "basic", "full"] as const) {
-      const option = document.createElement("option");
-      option.value = key;
-      option.disabled = !support[key];
-      option.textContent = `${labels[key]} (${TIERS[key].size})`;
-      if (!support[key]) {
-        option.textContent += ` — ${t("ai_answer_unsupported", "not supported on this device")}`;
-      }
-      select.append(option);
-    }
-
-    // at least one tier is supported, otherwise run() returned nothing
-    select.value = pickTier(support) ?? "basic";
-
-    const hint = document.createElement("p");
-    hint.className = "ai-answer-hint";
-    const updateHint = (): void => {
-      hint.textContent = t(
-        "ai_answer_download",
-        "The model (%(size)s) is downloaded once and cached in your browser"
-      ).replace("%(size)s", TIERS[select.value as TierKey].size);
-    };
-    updateHint();
-
-    select.addEventListener("change", () => {
-      saveTier(select.value as TierKey);
-      updateHint();
-    });
-
-    const controls = document.createElement("div");
-    controls.className = "ai-answer-controls";
-    controls.append(button, select);
-
-    const setup = document.createElement("div");
-    setup.className = "ai-answer-setup";
-    setup.append(controls, hint);
-
     const body = document.createElement("div");
     body.className = "ai-answer-body";
 
+    const start = (key: TierKey): void => {
+      const badge = document.createElement("span");
+      badge.className = "ai-answer-badge";
+      badge.textContent = labels[key];
+      badge.title = "Runs on your GPU. Your fans may disagree.";
+      header.append(badge);
+
+      AiAnswer.generate(body, TIERS[key], sources);
+    };
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "ai-answer-button";
+    button.textContent = t("ai_answer_button", "Generate AI answer");
+
+    const setup = document.createElement("div");
+    setup.className = "ai-answer-setup";
+
+    if (isMobile()) {
+      // phones: a small button, the lite model only, and a warning to confirm
+      card.classList.add("ai-answer-mobile");
+      button.classList.add("ai-answer-small");
+
+      const warning = document.createElement("p");
+      warning.className = "ai-answer-warning";
+      warning.hidden = true;
+      warning.textContent = t(
+        "ai_answer_mobile_warning",
+        "AI runs on your phone and may not work at all, or may make it freeze badly. Continue?"
+      );
+
+      const confirm = document.createElement("button");
+      confirm.type = "button";
+      confirm.className = "ai-answer-button";
+      confirm.textContent = t("ai_answer_mobile_confirm", "Continue anyway");
+
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "ai-answer-button ai-answer-cancel";
+      cancel.textContent = t("ai_answer_mobile_cancel", "Cancel");
+
+      const confirmRow = document.createElement("div");
+      confirmRow.className = "ai-answer-controls";
+      confirmRow.hidden = true;
+      confirmRow.append(confirm, cancel);
+
+      const toggle = (asking: boolean): void => {
+        button.hidden = asking;
+        warning.hidden = !asking;
+        confirmRow.hidden = !asking;
+      };
+      button.addEventListener("click", () => toggle(true));
+      cancel.addEventListener("click", () => toggle(false));
+      confirm.addEventListener(
+        "click",
+        () => {
+          setup.remove();
+          start("lite");
+        },
+        { once: true }
+      );
+
+      setup.append(button, warning, confirmRow);
+    } else {
+      const select = document.createElement("select");
+      select.className = "ai-answer-model";
+      select.setAttribute("aria-label", t("ai_answer_model", "Model"));
+
+      for (const key of ["lite", "basic", "full"] as const) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.disabled = !support[key];
+        option.textContent = `${labels[key]} (${TIERS[key].size})`;
+        if (!support[key]) {
+          option.textContent += ` — ${t("ai_answer_unsupported", "not supported on this device")}`;
+        }
+        select.append(option);
+      }
+
+      // at least one tier is supported, otherwise run() returned nothing
+      select.value = pickTier(support) ?? "basic";
+
+      const hint = document.createElement("p");
+      hint.className = "ai-answer-hint";
+      const updateHint = (): void => {
+        hint.textContent = t(
+          "ai_answer_download",
+          "The model (%(size)s) is downloaded once and cached in your browser"
+        ).replace("%(size)s", TIERS[select.value as TierKey].size);
+      };
+      updateHint();
+
+      select.addEventListener("change", () => {
+        saveTier(select.value as TierKey);
+        updateHint();
+      });
+
+      const controls = document.createElement("div");
+      controls.className = "ai-answer-controls";
+      controls.append(button, select);
+      setup.append(controls, hint);
+
+      button.addEventListener(
+        "click",
+        () => {
+          setup.remove();
+          start(select.value as TierKey);
+        },
+        { once: true }
+      );
+    }
+
     card.append(header, setup, body);
     appendAnswerElement(card);
-
-    button.addEventListener(
-      "click",
-      () => {
-        const tier: Tier = TIERS[select.value as TierKey];
-        setup.remove();
-
-        const badge = document.createElement("span");
-        badge.className = "ai-answer-badge";
-        badge.textContent = labels[select.value as TierKey];
-        badge.title = "Runs on your GPU. Your fans may disagree.";
-        header.append(badge);
-
-        AiAnswer.generate(body, tier, sources);
-      },
-      { once: true }
-    );
   }
 
   /** Easter egg: a quick burst of sparks when the title spark is clicked repeatedly. */

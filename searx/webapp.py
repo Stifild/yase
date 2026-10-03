@@ -336,6 +336,11 @@ def get_translations():
         'ai_answer_model_lite': gettext('Lite model'),
         'ai_answer_model_basic': gettext('Basic model'),
         'ai_answer_model_full': gettext('Full model'),
+        'ai_answer_mobile_warning': gettext(
+            'AI runs on your phone and may not work at all, or may make it freeze badly. Continue?'
+        ),
+        'ai_answer_mobile_confirm': gettext('Continue anyway'),
+        'ai_answer_mobile_cancel': gettext('Cancel'),
         'ai_answer_unsupported': gettext('not supported on this device'),
         'ai_answer_loading': gettext('Loading the model'),
         'ai_answer_step_prepare': gettext('Preparing the model'),

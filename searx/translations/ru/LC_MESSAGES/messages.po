@@ -1867,6 +1867,18 @@ msgid "Generate AI answer"
 msgstr "Сгенерировать ИИ-ответ"
 
 #: searx/webapp.py
+msgid "AI runs on your phone and may not work at all, or may make it freeze badly. Continue?"
+msgstr "ИИ работает прямо на телефоне: он может не заработать вовсе или сильно его подвесить. Продолжить?"
+
+#: searx/webapp.py
+msgid "Continue anyway"
+msgstr "Всё равно продолжить"
+
+#: searx/webapp.py
+msgid "Cancel"
+msgstr "Отмена"
+
+#: searx/webapp.py
 msgid "The model (%(size)s) is downloaded once and cached in your browser"
 msgstr "Модель (%(size)s) скачивается один раз и сохраняется в кэше браузера"
 

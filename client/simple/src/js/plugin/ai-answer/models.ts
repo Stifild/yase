@@ -85,11 +85,20 @@ type NavigatorGPU = Navigator & {
   deviceMemory?: number;
 };
 
+/** Phones and tablets (iOS, iPadOS, Android): weak and memory-limited, the tab gets killed easily. */
+export const isMobile = (): boolean => {
+  const ua = navigator.userAgent;
+  if (IOS_UA.test(ua)) return true;
+  // iPadOS reports itself as a Mac, but has a touch screen
+  if (MAC_UA.test(ua) && navigator.maxTouchPoints > 1) return true;
+  return navigator.maxTouchPoints > 0 && MOBILE_UA.test(ua);
+};
+
 export type Support = Record<TierKey, boolean>;
 
 /**
  * Which tiers can run on this device. All `false` means the feature should
- * stay hidden (no WebGPU, iOS, or a GPU too limited even for the lite tier).
+ * stay hidden (no WebGPU, or a GPU too limited even for the lite tier).
  */
 export const detectSupport = async (): Promise<Support> => {
   const none: Support = { lite: false, basic: false, full: false };
@@ -101,25 +110,21 @@ export const detectSupport = async (): Promise<Support> => {
     const adapter = await nav.gpu.requestAdapter();
     if (!adapter) return none;
 
-    const mobile = navigator.maxTouchPoints > 0 && MOBILE_UA.test(navigator.userAgent);
     // deviceMemory is capped at 8 and only exists in Chromium
     const memory = nav.deviceMemory ?? 8;
 
     const { maxBufferSize } = adapter.limits;
     console.debug(`[PLUGIN] aiAnswer: WebGPU maxBufferSize = ${Math.round(maxBufferSize / MiB)} MiB`);
 
-    // Not supported on iOS (measured on iPhone 17, Safari and Orion): the tab
-    // is killed at ~850 MB while the basic model downloads (transformers.js
-    // buffers a whole weights file) and, even with the lite model, when the
-    // prefill of a prompt over ~125-250 tokens allocates its logits.
-    // iPadOS reports itself as a Mac, but has a touch screen.
-    const ios = IOS_UA.test(navigator.userAgent) || (MAC_UA.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-    if (ios) return none;
+    // Phones only get the lite tier: on iOS the tab is killed at ~850 MB while
+    // the basic model downloads (transformers.js buffers a whole weights
+    // file), and even the lite model can die at prefill on a long prompt.
+    if (isMobile()) return { lite: maxBufferSize >= TIERS.lite.minBufferSize, basic: false, full: false };
 
     return {
       lite: maxBufferSize >= TIERS.lite.minBufferSize,
       basic: maxBufferSize >= TIERS.basic.minBufferSize,
-      full: !mobile && memory >= 8 && adapter.features.has("shader-f16") && maxBufferSize >= TIERS.full.minBufferSize
+      full: memory >= 8 && adapter.features.has("shader-f16") && maxBufferSize >= TIERS.full.minBufferSize
     };
   } catch {
     return none;

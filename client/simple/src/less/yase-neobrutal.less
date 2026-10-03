@@ -469,6 +469,25 @@ footer {
   border-top: 0;
 }
 
+// one vertical rhythm for the sidebar blocks: 1rem between blocks, 0.6rem
+// from a heading to its content (upstream stacks 2em margin + 1em padding on
+// the heading, 10px on the infobox and nothing under the engine table)
+#sidebar {
+  .sidebar-collapsible {
+    margin: 0 0 1rem;
+    padding: 0;
+  }
+
+  summary.title {
+    margin: 0 0 0.6rem;
+    padding: 0;
+  }
+
+  .infobox {
+    margin: 0;
+  }
+}
+
 #sidebar-end-collapsible {
   border-bottom: 0;
 }

@@ -75,6 +75,55 @@ const SYSTEM_PROMPT =
 
 const t = (key: string, fallback: string): string => settings.translations?.[key] ?? fallback;
 
+const NETWORK_ERROR = /failed to fetch|networkerror|load failed|network request|err_/i;
+const GPU_ERROR = /webgpu|gpu|adapter|device/i;
+const MEMORY_ERROR = /memory|alloc|buffer|out of/i;
+
+type Failure = { reason: string; fixes: string[] };
+
+/** Maps a raw worker error to a human reason and a few quick fixes. */
+const explainFailure = (raw: string): Failure => {
+  if (NETWORK_ERROR.test(raw)) {
+    return {
+      reason: t("ai_answer_err_network", "The model could not be downloaded."),
+      fixes: [
+        t("ai_answer_fix_connection", "Check your internet connection and try again."),
+        t(
+          "ai_answer_fix_blockers",
+          "Turn off ad blockers, VPN or a proxy for this site: they may block huggingface.co."
+        ),
+        t("ai_answer_fix_storage", "Free some disk space or leave a private window: the browser must cache the model.")
+      ]
+    };
+  }
+  if (GPU_ERROR.test(raw)) {
+    return {
+      reason: t("ai_answer_err_gpu", "WebGPU is unavailable or crashed."),
+      fixes: [
+        t("ai_answer_fix_browser", "Update the browser (Chrome or Edge 113+, Safari 18+)."),
+        t("ai_answer_fix_hardware", "Enable hardware acceleration in the browser settings."),
+        t("ai_answer_fix_lite", "Pick the lite model: it needs less video memory.")
+      ]
+    };
+  }
+  if (MEMORY_ERROR.test(raw)) {
+    return {
+      reason: t("ai_answer_err_memory", "Not enough memory for this model."),
+      fixes: [
+        t("ai_answer_fix_lite", "Pick the lite model: it needs less video memory."),
+        t("ai_answer_fix_tabs", "Close other heavy tabs and apps, then try again.")
+      ]
+    };
+  }
+  return {
+    reason: t("ai_answer_err_unknown", "Something went wrong while running the model."),
+    fixes: [
+      t("ai_answer_fix_reload", "Reload the page and try again."),
+      t("ai_answer_fix_lite", "Pick the lite model: it needs less video memory.")
+    ]
+  };
+};
+
 /**
  * Summarizes the top results with a language model running in the browser
  * (transformers.js + WebGPU, in a Web Worker).
@@ -318,6 +367,18 @@ export default class AiAnswer extends Plugin {
     // The instruction goes last because that is where small models obey it best.
     const language = CYRILLIC.test(query) ? "Russian" : "the same language as the query";
 
+    // The 270M model answers the instructions instead of the query when given
+    // a long system prompt, so it gets one short message: facts first, the
+    // question last.
+    if (tier.maxSnippet) {
+      return [
+        {
+          role: "user",
+          content: `${list}\n\nUsing only the text above, answer in ${language} in 1-2 sentences: ${query}`
+        }
+      ];
+    }
+
     return [
       { role: "system", content: SYSTEM_PROMPT },
       { role: "user", content: `Query: ${query}\n\nSources:\n${list}\n\nAnswer in ${language}.` }
@@ -473,7 +534,7 @@ export default class AiAnswer extends Plugin {
       }
     };
 
-    const fail = (): void => {
+    const fail = (raw = ""): void => {
       window.clearTimeout(settleTimer);
       stopWaiting();
       cancelAnimationFrame(frame);
@@ -492,6 +553,30 @@ export default class AiAnswer extends Plugin {
       retry.addEventListener("click", () => AiAnswer.generate(body, tier, sources, attempt + 1), { once: true });
 
       status.append(message, retry);
+
+      // the reason and quick fixes go to the footer
+      const failure = explainFailure(raw);
+      const details = document.createElement("div");
+      details.className = "ai-answer-footer ai-answer-failure";
+
+      const reason = document.createElement("strong");
+      reason.textContent = failure.reason;
+
+      const fixes = document.createElement("ul");
+      for (const fix of failure.fixes) {
+        const item = document.createElement("li");
+        item.textContent = fix;
+        fixes.append(item);
+      }
+
+      details.append(reason, fixes);
+      if (raw) {
+        const technical = document.createElement("small");
+        technical.className = "ai-answer-hint";
+        technical.textContent = raw;
+        details.append(technical);
+      }
+      body.append(details);
     };
 
     worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
@@ -548,12 +633,12 @@ export default class AiAnswer extends Plugin {
         }
         case "error": {
           console.error("[PLUGIN] aiAnswer:", message.message);
-          fail();
+          fail(message.message);
           break;
         }
       }
     });
-    worker.addEventListener("error", fail);
+    worker.addEventListener("error", (event: ErrorEvent) => fail(event.message));
 
     const request: WorkerRequest = { type: "generate", tier: tier, messages: AiAnswer.buildMessages(sources, tier) };
     worker.postMessage(request);

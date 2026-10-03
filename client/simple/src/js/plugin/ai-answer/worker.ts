@@ -7,7 +7,7 @@ import type { Tier } from "./models.ts";
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 
-export type WorkerRequest = { type: "generate"; tier: Tier; messages: ChatMessage[] };
+export type WorkerRequest = { type: "generate"; tier: Tier; messages: ChatMessage[]; probe?: boolean };
 
 export type WorkerResponse =
   | { type: "progress"; loaded: number; total: number }
@@ -65,7 +65,7 @@ const load = (tier: Tier): Promise<Generator> => {
 };
 
 self.addEventListener("message", async (event: MessageEvent<WorkerRequest>) => {
-  const { tier, messages } = event.data;
+  const { tier, messages, probe } = event.data;
 
   try {
     const generator = await load(tier);
@@ -84,6 +84,17 @@ self.addEventListener("message", async (event: MessageEvent<WorkerRequest>) => {
         post({ type: "token", text: text });
       }
     });
+
+    if (probe) {
+      // debugging aid (?aidebug=probe): find the prompt size at which the tab dies
+      for (const chars of [2, 100, 250, 500, 750, 1000]) {
+        log(`probe: ${chars} chars`);
+        const content = "a ".repeat(chars / 2).trim();
+        // biome-ignore lint/performance/noAwaitInLoops: the runs must be sequential
+        await generator([{ role: "user", content: content }], { max_new_tokens: 1, do_sample: false });
+        log(`probe: ${chars} chars ok`);
+      }
+    }
 
     await generator(messages, {
       max_new_tokens: 300,

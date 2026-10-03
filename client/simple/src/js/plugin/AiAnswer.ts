@@ -542,7 +542,12 @@ export default class AiAnswer extends Plugin {
     });
     worker.addEventListener("error", fail);
 
-    const request: WorkerRequest = { type: "generate", tier: tier, messages: AiAnswer.buildMessages(sources, tier) };
+    const request: WorkerRequest = {
+      type: "generate",
+      tier: tier,
+      messages: AiAnswer.buildMessages(sources, tier),
+      probe: new URLSearchParams(location.search).get("aidebug") === "probe"
+    };
     worker.postMessage(request);
   }
 

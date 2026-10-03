@@ -183,9 +183,12 @@ footer {
   --color-result-border: var(--nb-track);
   border-left: 3px solid var(--color-nb-fill-font);
 
+  // toolkit.less forces `select { padding: 0.2rem !important }`, so the text
+  // hugged the border; match the inner padding of the button next to it
   .ai-answer-model {
     border: 2px solid var(--color-nb-fill-font);
     border-radius: 12px;
+    padding: 0.45rem 1rem !important;
   }
 
   // the main button: same outline, radius and hard shadow as the rest

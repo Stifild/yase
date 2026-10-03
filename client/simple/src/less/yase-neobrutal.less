@@ -224,3 +224,12 @@ footer {
     font-weight: 500;
   }
 }
+
+// front page wordmark: keep a gap to the viewport edges (and room for the
+// glitch offset) on narrow screens; the logo shrinks inside the padding
+.index .title {
+  box-sizing: border-box;
+  padding: 0 1.25rem;
+  background-origin: content-box;
+  background-clip: content-box;
+}

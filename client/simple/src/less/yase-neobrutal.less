@@ -254,7 +254,12 @@ footer {
     background: var(--nb-accent-on-fill);
     border-color: var(--nb-accent-on-fill);
 
+    // upstream positions the tick with fixed offsets for a 2px ring; the ring
+    // is 3px here, so centre it in the padding box instead
     &::after {
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -62%) rotate(45deg);
       border-color: var(--nb-accent-on-fill-ink);
     }
   }

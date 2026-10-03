@@ -333,6 +333,7 @@ def get_translations():
         'ai_answer_button': gettext('Generate AI answer'),
         'ai_answer_download': gettext('The model (%(size)s) is downloaded once and cached in your browser'),
         'ai_answer_model': gettext('Model'),
+        'ai_answer_model_lite': gettext('Lite model'),
         'ai_answer_model_basic': gettext('Basic model'),
         'ai_answer_model_full': gettext('Full model'),
         'ai_answer_unsupported': gettext('not supported on this device'),

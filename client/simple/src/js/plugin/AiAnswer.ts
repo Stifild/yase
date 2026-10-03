@@ -93,7 +93,7 @@ export default class AiAnswer extends Plugin {
     if (sources.length === 0) return;
 
     const support = await detectSupport();
-    if (!(support.basic || support.full)) return;
+    if (!(support.lite || support.basic || support.full)) return;
 
     return { support: support, sources: sources };
   }
@@ -137,11 +137,15 @@ export default class AiAnswer extends Plugin {
     select.setAttribute("aria-label", t("ai_answer_model", "Model"));
 
     const labels: Record<TierKey, string> = {
+      lite: t("ai_answer_model_lite", "Lite model"),
       basic: t("ai_answer_model_basic", "Basic model"),
       full: t("ai_answer_model_full", "Full model")
     };
 
-    for (const key of ["basic", "full"] as const) {
+    for (const key of ["lite", "basic", "full"] as const) {
+      // the lite model only exists for devices that cannot run the others
+      if (key === "lite" && !support.lite) continue;
+
       const option = document.createElement("option");
       option.value = key;
       option.disabled = !support[key];

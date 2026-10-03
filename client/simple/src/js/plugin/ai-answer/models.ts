@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-export type TierKey = "basic" | "full";
+export type TierKey = "lite" | "basic" | "full";
 
 export type Tier = {
   /** Hugging Face model id (ONNX build for transformers.js) */
@@ -39,6 +39,17 @@ const MiB = 1024 * 1024;
  * garbage (onnxruntime#26732), hence `q4`.
  */
 export const TIERS: Record<TierKey, Tier> = {
+  // iOS kills the tab at ~850 MB (measured on iPhone 17, Safari/Orion), and
+  // transformers.js buffers a whole weights file in memory, so the 1 GB basic
+  // model cannot finish downloading there
+  lite: {
+    model: "onnx-community/gemma-3-270m-it-ONNX",
+    dtype: "q4",
+    size: "~330 MB",
+    bytes: 330_000_000,
+    compact: true,
+    minBufferSize: 256 * MiB
+  },
   basic: {
     model: "onnx-community/gemma-3-1b-it-ONNX",
     dtype: "q4",
@@ -57,6 +68,8 @@ export const TIERS: Record<TierKey, Tier> = {
 };
 
 const MOBILE_UA = /Mobi|Android/i;
+const IOS_UA = /iPhone|iPad|iPod/;
+const MAC_UA = /Macintosh/;
 const STORAGE_KEY = "aiAnswer.tier";
 
 type NavigatorGPU = Navigator & {
@@ -69,11 +82,11 @@ type NavigatorGPU = Navigator & {
 export type Support = Record<TierKey, boolean>;
 
 /**
- * Which tiers can run on this device. Both `false` means the feature should
+ * Which tiers can run on this device. All `false` means the feature should
  * stay hidden (no WebGPU, or a GPU too limited even for the basic tier).
  */
 export const detectSupport = async (): Promise<Support> => {
-  const none: Support = { basic: false, full: false };
+  const none: Support = { lite: false, basic: false, full: false };
 
   const nav = navigator as NavigatorGPU;
   if (!nav.gpu) return none;
@@ -89,7 +102,12 @@ export const detectSupport = async (): Promise<Support> => {
     const { maxBufferSize } = adapter.limits;
     console.debug(`[PLUGIN] aiAnswer: WebGPU maxBufferSize = ${Math.round(maxBufferSize / MiB)} MiB`);
 
+    // iPadOS reports itself as a Mac, but has a touch screen
+    const ios = IOS_UA.test(navigator.userAgent) || (MAC_UA.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    if (ios) return { lite: maxBufferSize >= TIERS.lite.minBufferSize, basic: false, full: false };
+
     return {
+      lite: false,
       basic: maxBufferSize >= TIERS.basic.minBufferSize,
       full: !mobile && memory >= 8 && adapter.features.has("shader-f16") && maxBufferSize >= TIERS.full.minBufferSize
     };
@@ -108,10 +126,11 @@ export const pickTier = (support: Support): TierKey | undefined => {
 
   if (support.full) return "full";
   if (support.basic) return "basic";
+  if (support.lite) return "lite";
   return;
 };
 
-const isTierKey = (value: unknown): value is TierKey => value === "basic" || value === "full";
+const isTierKey = (value: unknown): value is TierKey => value === "lite" || value === "basic" || value === "full";
 
 const loadTier = (): TierKey | undefined => {
   try {

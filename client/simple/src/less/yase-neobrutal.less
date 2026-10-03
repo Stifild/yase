@@ -389,6 +389,13 @@ footer {
 }
 
 @media screen and (max-width: @phone) {
+  // upstream sets width: 96% for the phone cards; with the margin reset above
+  // that left them flush left and narrower than the sidebar blocks
+  .result {
+    width: auto;
+    margin: 0 @results-tablet-offset 0.9rem;
+  }
+
   // narrow window, any input: compact pills that wrap onto further rows
   // (a mouse user has no easy way to scroll a hidden-scrollbar row)
   #categories_container {

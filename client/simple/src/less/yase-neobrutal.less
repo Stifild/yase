@@ -286,3 +286,28 @@ footer {
     }
   }
 }
+
+// upstream's phone layout strips the infobox border (!important) and
+// enlarges the category buttons: restore the outline, compact the pills
+// and leave a gap under the search box
+.infobox {
+  border: @nb-border !important;
+  border-radius: 12px;
+  background-color: var(--color-result-background) !important;
+}
+
+@media screen and (max-width: @phone) {
+  #categories_container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem 0.4rem;
+    padding-top: 0.9rem;
+  }
+
+  .category_checkbox label,
+  .category_button {
+    padding: 0.1rem 0.7rem !important;
+    margin: 0 !important;
+    font-size: 0.85em;
+  }
+}

@@ -183,27 +183,9 @@ footer {
   --color-result-border: var(--nb-track);
   border-left: 3px solid var(--color-nb-fill-font);
 
-  // room for the hard shadows (the card clips overflow on phones), and one
-  // shared box model so the button and the model select line up exactly
-  .ai-answer-controls {
-    align-items: stretch;
-    gap: 0.7rem;
-    padding: 0 4px 4px 0;
-  }
-
-  .ai-answer-button,
-  .ai-answer-model {
-    box-sizing: border-box;
-    min-height: 2.75rem;
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
-    line-height: 1.3;
-  }
-
   .ai-answer-model {
     border: 2px solid var(--color-nb-fill-font);
     border-radius: 12px;
-    box-shadow: 3px 3px 0 var(--color-nb-fill-font);
   }
 
   // the main button: same outline, radius and hard shadow as the rest

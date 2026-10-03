@@ -34,20 +34,6 @@ const OPEN_CITATION = /\[[\d\s,;]*$/;
 
 let greeted = false;
 
-// ?aidebug: phase log kept in localStorage, it survives a crashed tab
-const DEBUG_KEY = "aiAnswer.debugLog";
-const debugEnabled = (): boolean => new URLSearchParams(location.search).has("aidebug");
-
-const debugLog = (text: string): void => {
-  if (!debugEnabled()) return;
-  try {
-    const line = `${new Date().toISOString().slice(11, 23)} ${text}`;
-    localStorage.setItem(DEBUG_KEY, `${localStorage.getItem(DEBUG_KEY) ?? ""}${line}\n`);
-  } catch {
-    // storage may be blocked
-  }
-};
-
 // click the spark this many times within this many ms for a surprise
 const SPARK_CLICKS = 5;
 const SPARK_WINDOW = 2000;
@@ -157,9 +143,6 @@ export default class AiAnswer extends Plugin {
     };
 
     for (const key of ["lite", "basic", "full"] as const) {
-      // the lite model only exists for devices that cannot run the others
-      if (key === "lite" && !support.lite) continue;
-
       const option = document.createElement("option");
       option.value = key;
       option.disabled = !support[key];
@@ -200,18 +183,6 @@ export default class AiAnswer extends Plugin {
     body.className = "ai-answer-body";
 
     card.append(header, setup, body);
-
-    if (debugEnabled()) {
-      // what the previous page load managed to log before it died
-      const previous = localStorage.getItem(DEBUG_KEY);
-      if (previous) {
-        const pre = document.createElement("pre");
-        pre.className = "ai-answer-hint";
-        pre.textContent = `previous run:\n${previous}`;
-        card.append(pre);
-        localStorage.removeItem(DEBUG_KEY);
-      }
-    }
     appendAnswerElement(card);
 
     button.addEventListener(
@@ -305,7 +276,6 @@ export default class AiAnswer extends Plugin {
   }
 
   private static generate(body: HTMLElement, tier: Tier, sources: Source[], attempt = 0): void {
-    debugLog(`click: tier ${tier.model}`);
     body.replaceChildren();
     body.removeAttribute("data-state");
     body.dataset.state = "loading";
@@ -480,10 +450,6 @@ export default class AiAnswer extends Plugin {
 
       // biome-ignore lint/style/useDefaultSwitchClause: message type is exhaustively typed
       switch (message.type) {
-        case "log": {
-          debugLog(message.text);
-          break;
-        }
         case "progress": {
           if (downloaded || message.total <= 0) break;
 
@@ -502,7 +468,6 @@ export default class AiAnswer extends Plugin {
             window.clearTimeout(settleTimer);
             settleTimer = window.setTimeout(() => {
               downloaded = true;
-              debugLog("download settled");
               progress.dataset.indeterminate = "";
               if (labels[0]) labels[0].textContent = stepLabels[0] ?? "";
               setStep(1);
@@ -511,7 +476,6 @@ export default class AiAnswer extends Plugin {
           break;
         }
         case "ready": {
-          debugLog("ready");
           window.clearTimeout(settleTimer);
           downloaded = true;
           if (labels[0]) labels[0].textContent = stepLabels[0] ?? "";
@@ -542,12 +506,7 @@ export default class AiAnswer extends Plugin {
     });
     worker.addEventListener("error", fail);
 
-    const request: WorkerRequest = {
-      type: "generate",
-      tier: tier,
-      messages: AiAnswer.buildMessages(sources, tier),
-      probe: new URLSearchParams(location.search).get("aidebug") === "probe"
-    };
+    const request: WorkerRequest = { type: "generate", tier: tier, messages: AiAnswer.buildMessages(sources, tier) };
     worker.postMessage(request);
   }
 

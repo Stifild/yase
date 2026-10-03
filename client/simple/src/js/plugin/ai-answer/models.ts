@@ -28,7 +28,7 @@ export type Tier = {
    */
   minBufferSize: number;
   /**
-   * Prompt limits for small devices. The prefill computes logits for every
+   * Prompt limits for weak devices. The prefill computes logits for every
    * prompt token over a ~262k vocabulary, so a long prompt is expensive.
    */
   maxSources?: number;
@@ -45,9 +45,7 @@ const MiB = 1024 * 1024;
  * garbage (onnxruntime#26732), hence `q4`.
  */
 export const TIERS: Record<TierKey, Tier> = {
-  // iOS kills the tab at ~850 MB (measured on iPhone 17, Safari/Orion), and
-  // transformers.js buffers a whole weights file in memory, so the 1 GB basic
-  // model cannot finish downloading there
+  // for weak GPUs that cannot run the basic model
   lite: {
     model: "onnx-community/gemma-3-270m-it-ONNX",
     dtype: "q4",
@@ -91,7 +89,7 @@ export type Support = Record<TierKey, boolean>;
 
 /**
  * Which tiers can run on this device. All `false` means the feature should
- * stay hidden (no WebGPU, or a GPU too limited even for the basic tier).
+ * stay hidden (no WebGPU, iOS, or a GPU too limited even for the lite tier).
  */
 export const detectSupport = async (): Promise<Support> => {
   const none: Support = { lite: false, basic: false, full: false };
@@ -110,12 +108,16 @@ export const detectSupport = async (): Promise<Support> => {
     const { maxBufferSize } = adapter.limits;
     console.debug(`[PLUGIN] aiAnswer: WebGPU maxBufferSize = ${Math.round(maxBufferSize / MiB)} MiB`);
 
-    // iPadOS reports itself as a Mac, but has a touch screen
+    // Not supported on iOS (measured on iPhone 17, Safari and Orion): the tab
+    // is killed at ~850 MB while the basic model downloads (transformers.js
+    // buffers a whole weights file) and, even with the lite model, when the
+    // prefill of a prompt over ~125-250 tokens allocates its logits.
+    // iPadOS reports itself as a Mac, but has a touch screen.
     const ios = IOS_UA.test(navigator.userAgent) || (MAC_UA.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-    if (ios) return { lite: maxBufferSize >= TIERS.lite.minBufferSize, basic: false, full: false };
+    if (ios) return none;
 
     return {
-      lite: false,
+      lite: maxBufferSize >= TIERS.lite.minBufferSize,
       basic: maxBufferSize >= TIERS.basic.minBufferSize,
       full: !mobile && memory >= 8 && adapter.features.has("shader-f16") && maxBufferSize >= TIERS.full.minBufferSize
     };

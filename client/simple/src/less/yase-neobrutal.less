@@ -124,6 +124,9 @@ button.category_button .sxng-icon-set {
 
 footer {
   border-top: none;
+  box-sizing: border-box;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
 }
 
 // back-to-top: same outlined language, clear of the result cards
@@ -232,4 +235,11 @@ footer {
   padding: 0 1.25rem;
   background-origin: content-box;
   background-clip: content-box;
+}
+
+// front page search box: same side gap, so its hard shadow is not flush
+// against the viewport edge on phones
+.index #search {
+  box-sizing: border-box;
+  padding: 0 1.25rem;
 }

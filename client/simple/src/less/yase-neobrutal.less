@@ -192,6 +192,21 @@ footer {
     box-shadow: 3px 3px 0 var(--color-nb-fill-font); // same as the button
   }
 
+  // focus: upstream draws a purple ring offset by 2px, which clashes with the
+  // green fill. The select gets a tinted, "pressed" look instead; the button
+  // (keyboard focus only) a ring in the block's own text colour.
+  .ai-answer-model:focus-visible {
+    outline: none;
+    background-color: var(--nb-focus-tint);
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--color-nb-fill-font);
+  }
+
+  .ai-answer-button:focus-visible {
+    outline: 2px solid var(--color-nb-fill-font);
+    outline-offset: 3px;
+  }
+
   // leave room for the shadows (the card clips overflow on phones)
   .ai-answer-controls {
     padding: 0 4px 4px 0;

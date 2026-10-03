@@ -1867,6 +1867,22 @@ msgid "Generate AI answer"
 msgstr "Сгенерировать ИИ-ответ"
 
 #: searx/webapp.py
+msgid "AI runs on your phone and may not work at all, or may make it freeze badly. Continue?"
+msgstr "ИИ работает прямо на телефоне: он может не заработать вовсе или сильно его нагрузить. Продолжить?"
+
+#: searx/webapp.py
+msgid "I understand it may fail or freeze my phone"
+msgstr "Я понимаю, что оно может не заработать или подвесить телефон"
+
+#: searx/webapp.py
+msgid "Continue anyway"
+msgstr "Всё равно продолжить"
+
+#: searx/webapp.py
+msgid "Cancel"
+msgstr "Отмена"
+
+#: searx/webapp.py
 msgid "The model (%(size)s) is downloaded once and cached in your browser"
 msgstr "Модель (%(size)s) скачивается один раз и сохраняется в кэше браузера"
 
@@ -2557,3 +2573,50 @@ msgstr "не поддерживается на этом устройстве"
 #~ msgid "Engine"
 #~ msgstr "Движок"
 
+#: searx/webapp.py
+msgid "The model could not be downloaded."
+msgstr "Не удалось скачать модель."
+
+#: searx/webapp.py
+msgid "Check your internet connection and try again."
+msgstr "Проверьте подключение к интернету и попробуйте снова."
+
+#: searx/webapp.py
+msgid "Turn off ad blockers, VPN or a proxy for this site: they may block huggingface.co."
+msgstr "Отключите для этого сайта блокировщик рекламы, VPN или прокси: они могут блокировать huggingface.co."
+
+#: searx/webapp.py
+msgid "Free some disk space or leave a private window: the browser must cache the model."
+msgstr "Освободите место на диске или выйдите из приватного окна: браузеру нужно сохранить модель в кэш."
+
+#: searx/webapp.py
+msgid "WebGPU is unavailable or crashed."
+msgstr "WebGPU недоступен или завершился сбоем."
+
+#: searx/webapp.py
+msgid "Update the browser (Chrome or Edge 113+, Safari 18+)."
+msgstr "Обновите браузер (Chrome или Edge 113+, Safari 18+)."
+
+#: searx/webapp.py
+msgid "Enable hardware acceleration in the browser settings."
+msgstr "Включите аппаратное ускорение в настройках браузера."
+
+#: searx/webapp.py
+msgid "Pick the lite model: it needs less video memory."
+msgstr "Выберите облегчённую модель: ей нужно меньше видеопамяти."
+
+#: searx/webapp.py
+msgid "Not enough memory for this model."
+msgstr "Для этой модели не хватает памяти."
+
+#: searx/webapp.py
+msgid "Close other heavy tabs and apps, then try again."
+msgstr "Закройте другие тяжёлые вкладки и приложения и попробуйте снова."
+
+#: searx/webapp.py
+msgid "Something went wrong while running the model."
+msgstr "Что-то пошло не так при запуске модели."
+
+#: searx/webapp.py
+msgid "Reload the page and try again."
+msgstr "Перезагрузите страницу и попробуйте снова."

@@ -333,14 +333,34 @@ def get_translations():
         'ai_answer_button': gettext('Generate AI answer'),
         'ai_answer_download': gettext('The model (%(size)s) is downloaded once and cached in your browser'),
         'ai_answer_model': gettext('Model'),
-        'ai_answer_model_lite': gettext('Lite model'),
         'ai_answer_model_basic': gettext('Basic model'),
         'ai_answer_model_full': gettext('Full model'),
+        'ai_answer_mobile_warning': gettext(
+            'AI runs on your phone and may not work at all, or may make it freeze badly. Continue?'
+        ),
+        'ai_answer_mobile_understand': gettext('I understand it may fail or freeze my phone'),
+        'ai_answer_mobile_confirm': gettext('Continue anyway'),
+        'ai_answer_mobile_cancel': gettext('Cancel'),
         'ai_answer_unsupported': gettext('not supported on this device'),
         'ai_answer_loading': gettext('Loading the model'),
         'ai_answer_step_prepare': gettext('Preparing the model'),
         'ai_answer_step_generate': gettext('Generating the answer'),
         'ai_answer_error': gettext('Could not generate an answer'),
+        'ai_answer_err_network': gettext('The model could not be downloaded.'),
+        'ai_answer_fix_connection': gettext('Check your internet connection and try again.'),
+        'ai_answer_fix_blockers': gettext(
+            'Turn off ad blockers, VPN or a proxy for this site: they may block huggingface.co.'
+        ),
+        'ai_answer_fix_storage': gettext(
+            'Free some disk space or leave a private window: the browser must cache the model.'
+        ),
+        'ai_answer_err_gpu': gettext('WebGPU is unavailable or crashed.'),
+        'ai_answer_fix_browser': gettext('Update the browser (Chrome or Edge 113+, Safari 18+).'),
+        'ai_answer_fix_hardware': gettext('Enable hardware acceleration in the browser settings.'),
+        'ai_answer_err_memory': gettext('Not enough memory for this model.'),
+        'ai_answer_fix_tabs': gettext('Close other heavy tabs and apps, then try again.'),
+        'ai_answer_err_unknown': gettext('Something went wrong while running the model.'),
+        'ai_answer_fix_reload': gettext('Reload the page and try again.'),
         'ai_answer_retry': gettext('Try again'),
         'ai_answer_patience_1': gettext('Still here. The model is big, not stuck.'),
         'ai_answer_patience_2': gettext('Large downloads happen once, then it is cached.'),

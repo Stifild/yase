@@ -110,6 +110,44 @@
     outline-offset: 2px;
   }
 
+  // phones: just a small button until the user opts in
+  &.ai-answer-mobile {
+    gap: 0.4rem;
+
+    .ai-answer-small {
+      align-self: flex-start;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.85em;
+    }
+
+    [hidden] {
+      display: none;
+    }
+
+    .ai-answer-warning {
+      margin: 0;
+      font-size: 0.9em;
+    }
+
+    .ai-answer-understand {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9em;
+    }
+
+    .ai-answer-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .ai-answer-cancel {
+      background: transparent;
+      color: inherit;
+      border: 1px solid var(--color-result-border);
+    }
+  }
+
   .ai-answer-body {
     display: flex;
     flex-direction: column;
@@ -438,7 +476,7 @@
       align-items: stretch;
     }
 
-    .ai-answer-button,
+    .ai-answer-button:not(.ai-answer-small),
     .ai-answer-model {
       width: 100%;
       min-height: 2.75rem; // comfortable touch target
@@ -486,5 +524,20 @@
   #answers .ai-answer .ai-answer-cite {
     padding: 0.35em 0.3em;
     margin: -0.35em 0;
+  }
+}
+
+#answers .ai-answer .ai-answer-failure {
+  margin-top: 0.6rem;
+
+  ul {
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.9em;
+  }
+
+  .ai-answer-hint {
+    word-break: break-word;
+    opacity: 0.7;
   }
 }

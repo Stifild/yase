@@ -4,7 +4,7 @@ import { Plugin } from "../Plugin.ts";
 import { settings } from "../toolkit.ts";
 import { appendAnswerElement } from "../util/appendAnswerElement.ts";
 import { getElement } from "../util/getElement.ts";
-import { detectSupport, pickTier, type Support, saveTier, TIERS, type Tier, type TierKey } from "./ai-answer/models.ts";
+import { detectSupport, isMobile, isTrusted, pickTier, recordSuccess, type Support, saveTier, TIERS, type Tier, type TierKey } from "./ai-answer/models.ts";
 import type { ChatMessage, WorkerRequest, WorkerResponse } from "./ai-answer/worker.ts";
 
 type Source = {
@@ -61,6 +61,9 @@ const ANSWER_42 = /\b42\b|смысл жизни|meaning of life/i;
 
 const CYRILLIC = /\p{Script=Cyrillic}/u;
 
+// seconds the phone confirm button stays locked
+const CONFIRM_DELAY = 4;
+
 const MAX_SOURCES = 6;
 const MAX_SNIPPET = 400;
 
@@ -74,6 +77,52 @@ const SYSTEM_PROMPT =
   '"The sources do not contain a clear answer." (translated into the requested language).';
 
 const t = (key: string, fallback: string): string => settings.translations?.[key] ?? fallback;
+
+const NETWORK_ERROR = /failed to fetch|networkerror|load failed|network request|err_/i;
+const GPU_ERROR = /webgpu|gpu|adapter|device/i;
+const MEMORY_ERROR = /memory|alloc|buffer|out of/i;
+
+type Failure = { reason: string; fixes: string[] };
+
+/** Maps a raw worker error to a human reason and a few quick fixes. */
+const explainFailure = (raw: string): Failure => {
+  if (NETWORK_ERROR.test(raw)) {
+    return {
+      reason: t("ai_answer_err_network", "The model could not be downloaded."),
+      fixes: [
+        t("ai_answer_fix_connection", "Check your internet connection and try again."),
+        t(
+          "ai_answer_fix_blockers",
+          "Turn off ad blockers, VPN or a proxy for this site: they may block huggingface.co."
+        ),
+        t("ai_answer_fix_storage", "Free some disk space or leave a private window: the browser must cache the model.")
+      ]
+    };
+  }
+  if (GPU_ERROR.test(raw)) {
+    return {
+      reason: t("ai_answer_err_gpu", "WebGPU is unavailable or crashed."),
+      fixes: [
+        t("ai_answer_fix_browser", "Update the browser (Chrome or Edge 113+, Safari 18+)."),
+        t("ai_answer_fix_hardware", "Enable hardware acceleration in the browser settings.")
+      ]
+    };
+  }
+  if (MEMORY_ERROR.test(raw)) {
+    return {
+      reason: t("ai_answer_err_memory", "Not enough memory for this model."),
+      fixes: [
+        t("ai_answer_fix_tabs", "Close other heavy tabs and apps, then try again.")
+      ]
+    };
+  }
+  return {
+    reason: t("ai_answer_err_unknown", "Something went wrong while running the model."),
+    fixes: [
+      t("ai_answer_fix_reload", "Reload the page and try again.")
+    ]
+  };
+};
 
 /**
  * Summarizes the top results with a language model running in the browser
@@ -93,7 +142,7 @@ export default class AiAnswer extends Plugin {
     if (sources.length === 0) return;
 
     const support = await detectSupport();
-    if (!(support.lite || support.basic || support.full)) return;
+    if (!(support.basic || support.full)) return;
 
     return { support: support, sources: sources };
   }
@@ -127,80 +176,166 @@ export default class AiAnswer extends Plugin {
       );
     }
 
+    const labels: Record<TierKey, string> = {
+      basic: t("ai_answer_model_basic", "Basic model"),
+      full: t("ai_answer_model_full", "Full model")
+    };
+
+    const body = document.createElement("div");
+    body.className = "ai-answer-body";
+
+    const start = (key: TierKey): void => {
+      const badge = document.createElement("span");
+      badge.className = "ai-answer-badge";
+      badge.textContent = labels[key];
+      badge.title = "Runs on your GPU. Your fans may disagree.";
+      header.append(badge);
+
+      AiAnswer.generate(body, TIERS[key], sources);
+    };
+
     const button = document.createElement("button");
     button.type = "button";
     button.className = "ai-answer-button";
     button.textContent = t("ai_answer_button", "Generate AI answer");
 
-    const select = document.createElement("select");
-    select.className = "ai-answer-model";
-    select.setAttribute("aria-label", t("ai_answer_model", "Model"));
-
-    const labels: Record<TierKey, string> = {
-      lite: t("ai_answer_model_lite", "Lite model"),
-      basic: t("ai_answer_model_basic", "Basic model"),
-      full: t("ai_answer_model_full", "Full model")
-    };
-
-    for (const key of ["lite", "basic", "full"] as const) {
-      const option = document.createElement("option");
-      option.value = key;
-      option.disabled = !support[key];
-      option.textContent = `${labels[key]} (${TIERS[key].size})`;
-      if (!support[key]) {
-        option.textContent += ` — ${t("ai_answer_unsupported", "not supported on this device")}`;
-      }
-      select.append(option);
-    }
-
-    // at least one tier is supported, otherwise run() returned nothing
-    select.value = pickTier(support) ?? "basic";
-
-    const hint = document.createElement("p");
-    hint.className = "ai-answer-hint";
-    const updateHint = (): void => {
-      hint.textContent = t(
-        "ai_answer_download",
-        "The model (%(size)s) is downloaded once and cached in your browser"
-      ).replace("%(size)s", TIERS[select.value as TierKey].size);
-    };
-    updateHint();
-
-    select.addEventListener("change", () => {
-      saveTier(select.value as TierKey);
-      updateHint();
-    });
-
-    const controls = document.createElement("div");
-    controls.className = "ai-answer-controls";
-    controls.append(button, select);
-
     const setup = document.createElement("div");
     setup.className = "ai-answer-setup";
-    setup.append(controls, hint);
 
-    const body = document.createElement("div");
-    body.className = "ai-answer-body";
+    if (isMobile() && !isTrusted()) {
+      // phones (until 3 answers have worked): a small button, the basic model only, and a warning to confirm
+      card.classList.add("ai-answer-mobile");
+      button.classList.add("ai-answer-small");
+
+      const warning = document.createElement("p");
+      warning.className = "ai-answer-warning";
+      warning.hidden = true;
+      warning.textContent = t(
+        "ai_answer_mobile_warning",
+        "AI runs on your phone and may not work at all, or may make it freeze badly. Continue?"
+      );
+
+      // the user must tick this before "Continue" works, so the warning is not skipped
+      const understand = document.createElement("input");
+      understand.type = "checkbox";
+      const understandLabel = document.createElement("label");
+      understandLabel.className = "ai-answer-understand";
+      understandLabel.append(
+        understand,
+        t("ai_answer_mobile_understand", "I understand it may fail or freeze my phone")
+      );
+
+      const confirm = document.createElement("button");
+      confirm.type = "button";
+      confirm.className = "ai-answer-button";
+      confirm.disabled = true;
+      const confirmText = confirm.textContent;
+
+      // the button also stays locked for a few seconds so the text is read
+      let timer: number | undefined;
+      let left = 0;
+      const refresh = (): void => {
+        confirm.disabled = !understand.checked || left > 0;
+        confirm.textContent = left > 0 ? `${confirmText} (${left})` : confirmText;
+      };
+      understand.addEventListener("change", refresh);
+      confirm.textContent = t("ai_answer_mobile_confirm", "Continue anyway");
+
+      const cancel = document.createElement("button");
+      cancel.type = "button";
+      cancel.className = "ai-answer-button ai-answer-cancel";
+      cancel.textContent = t("ai_answer_mobile_cancel", "Cancel");
+
+      const confirmRow = document.createElement("div");
+      confirmRow.className = "ai-answer-controls";
+      confirmRow.hidden = true;
+      understandLabel.hidden = true;
+      confirmRow.append(confirm, cancel);
+
+      const toggle = (asking: boolean): void => {
+        clearInterval(timer);
+        if (asking) {
+          left = CONFIRM_DELAY;
+          timer = window.setInterval(() => {
+            left -= 1;
+            if (left <= 0) clearInterval(timer);
+            refresh();
+          }, 1000);
+        } else {
+          left = 0;
+        }
+
+        button.hidden = asking;
+        warning.hidden = !asking;
+        understandLabel.hidden = !asking;
+        confirmRow.hidden = !asking;
+        if (!asking) understand.checked = false;
+        refresh();
+      };
+      button.addEventListener("click", () => toggle(true));
+      cancel.addEventListener("click", () => toggle(false));
+      confirm.addEventListener(
+        "click",
+        () => {
+          clearInterval(timer);
+          setup.remove();
+          start("basic");
+        },
+        { once: true }
+      );
+
+      setup.append(button, warning, understandLabel, confirmRow);
+    } else {
+      const select = document.createElement("select");
+      select.className = "ai-answer-model";
+      select.setAttribute("aria-label", t("ai_answer_model", "Model"));
+
+      for (const key of ["basic", "full"] as const) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.disabled = !support[key];
+        option.textContent = `${labels[key]} (${TIERS[key].size})`;
+        if (!support[key]) {
+          option.textContent += ` — ${t("ai_answer_unsupported", "not supported on this device")}`;
+        }
+        select.append(option);
+      }
+
+      // at least one tier is supported, otherwise run() returned nothing
+      select.value = pickTier(support) ?? "basic";
+
+      const hint = document.createElement("p");
+      hint.className = "ai-answer-hint";
+      const updateHint = (): void => {
+        hint.textContent = t(
+          "ai_answer_download",
+          "The model (%(size)s) is downloaded once and cached in your browser"
+        ).replace("%(size)s", TIERS[select.value as TierKey].size);
+      };
+      updateHint();
+
+      select.addEventListener("change", () => {
+        saveTier(select.value as TierKey);
+        updateHint();
+      });
+
+      const controls = document.createElement("div");
+      controls.className = "ai-answer-controls";
+      controls.append(button, select);
+      setup.append(controls, hint);
+
+      button.addEventListener(
+        "click",
+        () => {
+          setup.remove();
+          start(select.value as TierKey);
+        },
+        { once: true }
+      );
+    }
 
     card.append(header, setup, body);
     appendAnswerElement(card);
-
-    button.addEventListener(
-      "click",
-      () => {
-        const tier: Tier = TIERS[select.value as TierKey];
-        setup.remove();
-
-        const badge = document.createElement("span");
-        badge.className = "ai-answer-badge";
-        badge.textContent = labels[select.value as TierKey];
-        badge.title = "Runs on your GPU. Your fans may disagree.";
-        header.append(badge);
-
-        AiAnswer.generate(body, tier, sources);
-      },
-      { once: true }
-    );
   }
 
   /** Easter egg: a quick burst of sparks when the title spark is clicked repeatedly. */
@@ -424,7 +559,7 @@ export default class AiAnswer extends Plugin {
       }
     };
 
-    const fail = (): void => {
+    const fail = (raw = ""): void => {
       window.clearTimeout(settleTimer);
       stopWaiting();
       cancelAnimationFrame(frame);
@@ -443,6 +578,30 @@ export default class AiAnswer extends Plugin {
       retry.addEventListener("click", () => AiAnswer.generate(body, tier, sources, attempt + 1), { once: true });
 
       status.append(message, retry);
+
+      // the reason and quick fixes go to the footer
+      const failure = explainFailure(raw);
+      const details = document.createElement("div");
+      details.className = "ai-answer-footer ai-answer-failure";
+
+      const reason = document.createElement("strong");
+      reason.textContent = failure.reason;
+
+      const fixes = document.createElement("ul");
+      for (const fix of failure.fixes) {
+        const item = document.createElement("li");
+        item.textContent = fix;
+        fixes.append(item);
+      }
+
+      details.append(reason, fixes);
+      if (raw) {
+        const technical = document.createElement("small");
+        technical.className = "ai-answer-hint";
+        technical.textContent = raw;
+        details.append(technical);
+      }
+      body.append(details);
     };
 
     worker.addEventListener("message", (event: MessageEvent<WorkerResponse>) => {
@@ -493,18 +652,19 @@ export default class AiAnswer extends Plugin {
         case "done": {
           worker.terminate();
           finished = true;
+          if (text.trim()) recordSuccess();
           // let the reveal catch up before the footer appears
           if (!frame) pump();
           break;
         }
         case "error": {
           console.error("[PLUGIN] aiAnswer:", message.message);
-          fail();
+          fail(message.message);
           break;
         }
       }
     });
-    worker.addEventListener("error", fail);
+    worker.addEventListener("error", (event: ErrorEvent) => fail(event.message));
 
     const request: WorkerRequest = { type: "generate", tier: tier, messages: AiAnswer.buildMessages(sources, tier) };
     worker.postMessage(request);

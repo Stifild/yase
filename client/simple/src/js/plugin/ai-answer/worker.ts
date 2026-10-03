@@ -56,6 +56,14 @@ const load = (tier: Tier): Promise<Generator> => {
   return generator;
 };
 
+// A failed download can reject promises nobody awaits (parallel file fetches in
+// transformers.js, "Failed to fetch"), which would leave the UI waiting forever.
+self.addEventListener("unhandledrejection", (event: PromiseRejectionEvent) => {
+  event.preventDefault();
+  const reason: unknown = event.reason;
+  post({ type: "error", message: reason instanceof Error ? reason.message : String(reason) });
+});
+
 self.addEventListener("message", async (event: MessageEvent<WorkerRequest>) => {
   const { tier, messages } = event.data;
 

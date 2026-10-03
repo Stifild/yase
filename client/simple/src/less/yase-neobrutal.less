@@ -424,3 +424,15 @@ footer {
     display: none;
   }
 }
+
+// button and model select share one row on wide screens: same text size and
+// height (phones keep upstream's 16px select so iOS doesn't zoom on focus)
+@media screen and (min-width: 50.01em) {
+  #answers .ai-answer {
+    .ai-answer-model {
+      height: auto;
+      font-size: 1rem;
+      line-height: 1.15;
+    }
+  }
+}

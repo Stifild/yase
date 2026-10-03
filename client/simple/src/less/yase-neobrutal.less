@@ -536,17 +536,20 @@ details[open] > summary.title::before {
 }
 
 // wide layout: the mark spans the three header rows (search, categories,
-// filters) instead of sitting as a 30px icon next to the search box
+// filters) instead of sitting as a 30px icon beside the search box. It hangs
+// off the logo grid cell (right edge at the cell's), so it follows the search
+// box in both the left-aligned and the centered layout.
 @media screen and (min-width: 79.76em) {
   #search_logo {
-    position: absolute;
-    top: 2rem;
-    left: 1rem;
+    position: relative;
     padding: 0;
     display: block;
     z-index: 1;
 
     svg {
+      position: absolute;
+      top: 0.5rem;
+      right: 0;
       display: block;
       flex: none;
       width: auto;

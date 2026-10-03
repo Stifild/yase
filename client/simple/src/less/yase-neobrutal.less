@@ -327,18 +327,37 @@ footer {
 }
 
 @media screen and (max-width: @phone) {
-  // one scrollable row of pills with comfortable touch targets
+  // narrow window, any input: compact pills that wrap onto further rows
+  // (a mouse user has no easy way to scroll a hidden-scrollbar row)
   #categories_container {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.45rem;
-    padding: 0.9rem 4px 0.6rem 2px;
-    width: max-content;
+    padding-top: 0.9rem;
   }
 
-  // upstream only makes #categories scroll on touch devices (hover: none);
-  // do it for every narrow window, so a mouse-driven one doesn't get a
-  // page-wide horizontal scroll instead
+  .category_checkbox label,
+  .category_button {
+    padding: 0.5rem 1.05rem !important;
+    margin: 0 !important;
+    font-size: 0.9em;
+  }
+
+  .search_filters {
+    flex-wrap: wrap;
+    gap: 0.3rem 0.8rem;
+    overflow-x: visible;
+  }
+}
+
+// touch devices: one swipeable row instead of wrapping
+@media screen and (max-width: @phone) and (hover: none) {
+  #categories_container {
+    flex-wrap: nowrap;
+    width: max-content;
+    padding: 0.9rem 4px 0.6rem 2px;
+  }
+
   #categories {
     width: 100%;
     min-width: 0;
@@ -348,7 +367,17 @@ footer {
     text-align: left;
   }
 
-  // hide the scrollbars of the scrolling rows
+  .category_checkbox,
+  .category_button {
+    flex: none;
+    white-space: nowrap;
+  }
+
+  .search_filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
   #categories,
   .search_filters {
     scrollbar-width: none;
@@ -357,18 +386,5 @@ footer {
   #categories::-webkit-scrollbar,
   .search_filters::-webkit-scrollbar {
     display: none;
-  }
-
-  .category_checkbox,
-  .category_button {
-    flex: none;
-    white-space: nowrap;
-  }
-
-  .category_checkbox label,
-  .category_button {
-    padding: 0.5rem 1.05rem !important;
-    margin: 0 !important;
-    font-size: 0.9em;
   }
 }

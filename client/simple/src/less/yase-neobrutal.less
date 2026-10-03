@@ -336,7 +336,19 @@ footer {
     width: max-content;
   }
 
-  // the scrolling is done by upstream's wrappers; hide their scrollbars
+  // upstream only makes #categories scroll on touch devices (hover: none);
+  // do it for every narrow window, so a mouse-driven one doesn't get a
+  // page-wide horizontal scroll instead
+  #categories {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: left;
+  }
+
+  // hide the scrollbars of the scrolling rows
   #categories,
   .search_filters {
     scrollbar-width: none;

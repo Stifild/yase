@@ -11,6 +11,7 @@ export type WorkerRequest = { type: "generate"; tier: Tier; messages: ChatMessag
 
 export type WorkerResponse =
   | { type: "progress"; loaded: number; total: number }
+  | { type: "log"; text: string }
   | { type: "ready" }
   | { type: "token"; text: string }
   | { type: "done" }
@@ -22,6 +23,7 @@ type Generator = {
 };
 
 const post = (message: WorkerResponse): void => self.postMessage(message);
+const log = (text: string): void => post({ type: "log", text: text });
 
 const generators = new Map<string, Promise<Generator>>();
 
@@ -31,6 +33,7 @@ const load = (tier: Tier): Promise<Generator> => {
 
   const files = new Map<string, { loaded: number; total: number }>();
 
+  log("pipeline: start");
   generator = pipeline("text-generation", tier.model, {
     device: "webgpu",
     dtype: tier.dtype,
@@ -49,6 +52,11 @@ const load = (tier: Tier): Promise<Generator> => {
     }
   }) as unknown as Promise<Generator>;
 
+  generator.then(
+    () => log("pipeline: created"),
+    () => log("pipeline: failed")
+  );
+
   // allow a retry after a failed download
   generator.catch(() => generators.delete(tier.model));
   generators.set(tier.model, generator);
@@ -62,11 +70,19 @@ self.addEventListener("message", async (event: MessageEvent<WorkerRequest>) => {
   try {
     const generator = await load(tier);
     post({ type: "ready" });
+    log(`generate: start, prompt ${messages.reduce((n, m) => n + m.content.length, 0)} chars`);
 
+    let firstToken = false;
     const streamer = new TextStreamer(generator.tokenizer, {
       skip_prompt: true,
       skip_special_tokens: true,
-      callback_function: (text: string) => post({ type: "token", text: text })
+      callback_function: (text: string) => {
+        if (!firstToken) {
+          firstToken = true;
+          log("generate: first token");
+        }
+        post({ type: "token", text: text });
+      }
     });
 
     await generator(messages, {
@@ -76,6 +92,7 @@ self.addEventListener("message", async (event: MessageEvent<WorkerRequest>) => {
       no_repeat_ngram_size: 8,
       streamer: streamer
     });
+    log("generate: done");
     post({ type: "done" });
   } catch (error) {
     post({ type: "error", message: error instanceof Error ? error.message : String(error) });

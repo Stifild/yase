@@ -27,6 +27,12 @@ export type Tier = {
    * heuristics, not measured requirements: tune them on real devices.
    */
   minBufferSize: number;
+  /**
+   * Prompt limits for small devices. The prefill computes logits for every
+   * prompt token over a ~262k vocabulary, so a long prompt is expensive.
+   */
+  maxSources?: number;
+  maxSnippet?: number;
 };
 
 const MiB = 1024 * 1024;
@@ -48,7 +54,9 @@ export const TIERS: Record<TierKey, Tier> = {
     size: "~330 MB",
     bytes: 330_000_000,
     compact: true,
-    minBufferSize: 256 * MiB
+    minBufferSize: 256 * MiB,
+    maxSources: 3,
+    maxSnippet: 200
   },
   basic: {
     model: "onnx-community/gemma-3-1b-it-ONNX",

@@ -229,7 +229,7 @@ export default class AiAnswer extends Plugin {
       confirm.type = "button";
       confirm.className = "ai-answer-button";
       confirm.disabled = true;
-      const confirmText = confirm.textContent;
+      const confirmText = t("ai_answer_mobile_confirm", "Continue anyway");
 
       // the button also stays locked for a few seconds so the text is read
       let timer: number | undefined;
@@ -239,7 +239,7 @@ export default class AiAnswer extends Plugin {
         confirm.textContent = left > 0 ? `${confirmText} (${left})` : confirmText;
       };
       understand.addEventListener("change", refresh);
-      confirm.textContent = t("ai_answer_mobile_confirm", "Continue anyway");
+      confirm.textContent = confirmText;
 
       const cancel = document.createElement("button");
       cancel.type = "button";

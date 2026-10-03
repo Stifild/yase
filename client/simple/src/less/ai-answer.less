@@ -120,10 +120,6 @@
       font-size: 0.85em;
     }
 
-    [hidden] {
-      display: none;
-    }
-
     .ai-answer-warning {
       margin: 0;
       font-size: 0.9em;
@@ -145,6 +141,11 @@
       background: transparent;
       color: inherit;
       border: 1px solid var(--color-result-border);
+    }
+
+    // after the display rules above, so `hidden` is not overridden
+    [hidden] {
+      display: none;
     }
   }
 

@@ -1871,6 +1871,10 @@ msgid "AI runs on your phone and may not work at all, or may make it freeze badl
 msgstr "ИИ работает прямо на телефоне: он может не заработать вовсе или сильно его нагрузить. Продолжить?"
 
 #: searx/webapp.py
+msgid "I understand it may fail or freeze my phone"
+msgstr "Я понимаю, что оно может не заработать или подвесить телефон"
+
+#: searx/webapp.py
 msgid "Continue anyway"
 msgstr "Всё равно продолжить"
 

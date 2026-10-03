@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-export type TierKey = "lite" | "basic" | "full";
+export type TierKey = "basic" | "full";
 
 export type Tier = {
   /** Hugging Face model id (ONNX build for transformers.js) */
@@ -45,17 +45,6 @@ const MiB = 1024 * 1024;
  * garbage (onnxruntime#26732), hence `q4`.
  */
 export const TIERS: Record<TierKey, Tier> = {
-  // for weak GPUs that cannot run the basic model
-  lite: {
-    model: "onnx-community/gemma-3-270m-it-ONNX",
-    dtype: "q4",
-    size: "~330 MB",
-    bytes: 330_000_000,
-    compact: true,
-    minBufferSize: 256 * MiB,
-    maxSources: 3,
-    maxSnippet: 200
-  },
   basic: {
     model: "onnx-community/gemma-3-1b-it-ONNX",
     dtype: "q4",
@@ -98,10 +87,10 @@ export type Support = Record<TierKey, boolean>;
 
 /**
  * Which tiers can run on this device. All `false` means the feature should
- * stay hidden (no WebGPU, or a GPU too limited even for the lite tier).
+ * stay hidden (no WebGPU, or a GPU too limited even for the basic tier).
  */
 export const detectSupport = async (): Promise<Support> => {
-  const none: Support = { lite: false, basic: false, full: false };
+  const none: Support = { basic: false, full: false };
 
   const nav = navigator as NavigatorGPU;
   if (!nav.gpu) return none;
@@ -116,13 +105,13 @@ export const detectSupport = async (): Promise<Support> => {
     const { maxBufferSize } = adapter.limits;
     console.debug(`[PLUGIN] aiAnswer: WebGPU maxBufferSize = ${Math.round(maxBufferSize / MiB)} MiB`);
 
-    // Phones only get the lite tier: on iOS the tab is killed at ~850 MB while
-    // the basic model downloads (transformers.js buffers a whole weights
-    // file), and even the lite model can die at prefill on a long prompt.
-    if (isMobile()) return { lite: maxBufferSize >= TIERS.lite.minBufferSize, basic: false, full: false };
+    // Phones only get the basic tier (Gemma 3 1B, `q4` = int4 weights with
+    // fp32 compute): the smaller models are too weak to answer anything. Note that
+    // on iOS the tab may be killed while it downloads (transformers.js buffers
+    // a whole weights file).
+    if (isMobile()) return { basic: maxBufferSize >= TIERS.basic.minBufferSize, full: false };
 
     return {
-      lite: maxBufferSize >= TIERS.lite.minBufferSize,
       basic: maxBufferSize >= TIERS.basic.minBufferSize,
       full: memory >= 8 && adapter.features.has("shader-f16") && maxBufferSize >= TIERS.full.minBufferSize
     };
@@ -141,11 +130,10 @@ export const pickTier = (support: Support): TierKey | undefined => {
 
   if (support.full) return "full";
   if (support.basic) return "basic";
-  if (support.lite) return "lite";
   return;
 };
 
-const isTierKey = (value: unknown): value is TierKey => value === "lite" || value === "basic" || value === "full";
+const isTierKey = (value: unknown): value is TierKey => value === "basic" || value === "full";
 
 const loadTier = (): TierKey | undefined => {
   try {
@@ -162,5 +150,28 @@ export const saveTier = (tier: TierKey): void => {
     localStorage.setItem(STORAGE_KEY, tier);
   } catch {
     // storage may be blocked, the choice just won't persist
+  }
+};
+
+const SUCCESS_KEY = "aiAnswer.successes";
+/** successful generations after which a phone is treated like a desktop (no warning) */
+const TRUSTED_AFTER = 3;
+
+const loadSuccesses = (): number => {
+  try {
+    return Number(localStorage.getItem(SUCCESS_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+};
+
+/** True once the device has produced enough answers to stop warning about it. */
+export const isTrusted = (): boolean => loadSuccesses() >= TRUSTED_AFTER;
+
+export const recordSuccess = (): void => {
+  try {
+    localStorage.setItem(SUCCESS_KEY, String(loadSuccesses() + 1));
+  } catch {
+    // storage may be blocked, the warning just stays
   }
 };

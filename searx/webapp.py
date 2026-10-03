@@ -333,12 +333,12 @@ def get_translations():
         'ai_answer_button': gettext('Generate AI answer'),
         'ai_answer_download': gettext('The model (%(size)s) is downloaded once and cached in your browser'),
         'ai_answer_model': gettext('Model'),
-        'ai_answer_model_lite': gettext('Lite model'),
         'ai_answer_model_basic': gettext('Basic model'),
         'ai_answer_model_full': gettext('Full model'),
         'ai_answer_mobile_warning': gettext(
             'AI runs on your phone and may not work at all, or may make it freeze badly. Continue?'
         ),
+        'ai_answer_mobile_understand': gettext('I understand it may fail or freeze my phone'),
         'ai_answer_mobile_confirm': gettext('Continue anyway'),
         'ai_answer_mobile_cancel': gettext('Cancel'),
         'ai_answer_unsupported': gettext('not supported on this device'),
@@ -357,7 +357,6 @@ def get_translations():
         'ai_answer_err_gpu': gettext('WebGPU is unavailable or crashed.'),
         'ai_answer_fix_browser': gettext('Update the browser (Chrome or Edge 113+, Safari 18+).'),
         'ai_answer_fix_hardware': gettext('Enable hardware acceleration in the browser settings.'),
-        'ai_answer_fix_lite': gettext('Pick the lite model: it needs less video memory.'),
         'ai_answer_err_memory': gettext('Not enough memory for this model.'),
         'ai_answer_fix_tabs': gettext('Close other heavy tabs and apps, then try again.'),
         'ai_answer_err_unknown': gettext('Something went wrong while running the model.'),

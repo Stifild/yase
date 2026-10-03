@@ -4,7 +4,7 @@ import { Plugin } from "../Plugin.ts";
 import { settings } from "../toolkit.ts";
 import { appendAnswerElement } from "../util/appendAnswerElement.ts";
 import { getElement } from "../util/getElement.ts";
-import { detectSupport, isMobile, pickTier, type Support, saveTier, TIERS, type Tier, type TierKey } from "./ai-answer/models.ts";
+import { detectSupport, isMobile, isTrusted, pickTier, recordSuccess, type Support, saveTier, TIERS, type Tier, type TierKey } from "./ai-answer/models.ts";
 import type { ChatMessage, WorkerRequest, WorkerResponse } from "./ai-answer/worker.ts";
 
 type Source = {
@@ -61,6 +61,9 @@ const ANSWER_42 = /\b42\b|смысл жизни|meaning of life/i;
 
 const CYRILLIC = /\p{Script=Cyrillic}/u;
 
+// seconds the phone confirm button stays locked
+const CONFIRM_DELAY = 4;
+
 const MAX_SOURCES = 6;
 const MAX_SNIPPET = 400;
 
@@ -101,8 +104,7 @@ const explainFailure = (raw: string): Failure => {
       reason: t("ai_answer_err_gpu", "WebGPU is unavailable or crashed."),
       fixes: [
         t("ai_answer_fix_browser", "Update the browser (Chrome or Edge 113+, Safari 18+)."),
-        t("ai_answer_fix_hardware", "Enable hardware acceleration in the browser settings."),
-        t("ai_answer_fix_lite", "Pick the lite model: it needs less video memory.")
+        t("ai_answer_fix_hardware", "Enable hardware acceleration in the browser settings.")
       ]
     };
   }
@@ -110,7 +112,6 @@ const explainFailure = (raw: string): Failure => {
     return {
       reason: t("ai_answer_err_memory", "Not enough memory for this model."),
       fixes: [
-        t("ai_answer_fix_lite", "Pick the lite model: it needs less video memory."),
         t("ai_answer_fix_tabs", "Close other heavy tabs and apps, then try again.")
       ]
     };
@@ -118,8 +119,7 @@ const explainFailure = (raw: string): Failure => {
   return {
     reason: t("ai_answer_err_unknown", "Something went wrong while running the model."),
     fixes: [
-      t("ai_answer_fix_reload", "Reload the page and try again."),
-      t("ai_answer_fix_lite", "Pick the lite model: it needs less video memory.")
+      t("ai_answer_fix_reload", "Reload the page and try again.")
     ]
   };
 };
@@ -142,7 +142,7 @@ export default class AiAnswer extends Plugin {
     if (sources.length === 0) return;
 
     const support = await detectSupport();
-    if (!(support.lite || support.basic || support.full)) return;
+    if (!(support.basic || support.full)) return;
 
     return { support: support, sources: sources };
   }
@@ -177,7 +177,6 @@ export default class AiAnswer extends Plugin {
     }
 
     const labels: Record<TierKey, string> = {
-      lite: t("ai_answer_model_lite", "Lite model"),
       basic: t("ai_answer_model_basic", "Basic model"),
       full: t("ai_answer_model_full", "Full model")
     };
@@ -203,8 +202,8 @@ export default class AiAnswer extends Plugin {
     const setup = document.createElement("div");
     setup.className = "ai-answer-setup";
 
-    if (isMobile()) {
-      // phones: a small button, the lite model only, and a warning to confirm
+    if (isMobile() && !isTrusted()) {
+      // phones (until 3 answers have worked): a small button, the basic model only, and a warning to confirm
       card.classList.add("ai-answer-mobile");
       button.classList.add("ai-answer-small");
 
@@ -216,9 +215,30 @@ export default class AiAnswer extends Plugin {
         "AI runs on your phone and may not work at all, or may make it freeze badly. Continue?"
       );
 
+      // the user must tick this before "Continue" works, so the warning is not skipped
+      const understand = document.createElement("input");
+      understand.type = "checkbox";
+      const understandLabel = document.createElement("label");
+      understandLabel.className = "ai-answer-understand";
+      understandLabel.append(
+        understand,
+        t("ai_answer_mobile_understand", "I understand it may fail or freeze my phone")
+      );
+
       const confirm = document.createElement("button");
       confirm.type = "button";
       confirm.className = "ai-answer-button";
+      confirm.disabled = true;
+      const confirmText = confirm.textContent;
+
+      // the button also stays locked for a few seconds so the text is read
+      let timer: number | undefined;
+      let left = 0;
+      const refresh = (): void => {
+        confirm.disabled = !understand.checked || left > 0;
+        confirm.textContent = left > 0 ? `${confirmText} (${left})` : confirmText;
+      };
+      understand.addEventListener("change", refresh);
       confirm.textContent = t("ai_answer_mobile_confirm", "Continue anyway");
 
       const cancel = document.createElement("button");
@@ -229,31 +249,48 @@ export default class AiAnswer extends Plugin {
       const confirmRow = document.createElement("div");
       confirmRow.className = "ai-answer-controls";
       confirmRow.hidden = true;
+      understandLabel.hidden = true;
       confirmRow.append(confirm, cancel);
 
       const toggle = (asking: boolean): void => {
+        clearInterval(timer);
+        if (asking) {
+          left = CONFIRM_DELAY;
+          timer = window.setInterval(() => {
+            left -= 1;
+            if (left <= 0) clearInterval(timer);
+            refresh();
+          }, 1000);
+        } else {
+          left = 0;
+        }
+
         button.hidden = asking;
         warning.hidden = !asking;
+        understandLabel.hidden = !asking;
         confirmRow.hidden = !asking;
+        if (!asking) understand.checked = false;
+        refresh();
       };
       button.addEventListener("click", () => toggle(true));
       cancel.addEventListener("click", () => toggle(false));
       confirm.addEventListener(
         "click",
         () => {
+          clearInterval(timer);
           setup.remove();
-          start("lite");
+          start("basic");
         },
         { once: true }
       );
 
-      setup.append(button, warning, confirmRow);
+      setup.append(button, warning, understandLabel, confirmRow);
     } else {
       const select = document.createElement("select");
       select.className = "ai-answer-model";
       select.setAttribute("aria-label", t("ai_answer_model", "Model"));
 
-      for (const key of ["lite", "basic", "full"] as const) {
+      for (const key of ["basic", "full"] as const) {
         const option = document.createElement("option");
         option.value = key;
         option.disabled = !support[key];
@@ -366,18 +403,6 @@ export default class AiAnswer extends Plugin {
     // Russian (or mixed-language) query, and small models follow the sources.
     // The instruction goes last because that is where small models obey it best.
     const language = CYRILLIC.test(query) ? "Russian" : "the same language as the query";
-
-    // The 270M model answers the instructions instead of the query when given
-    // a long system prompt, so it gets one short message: facts first, the
-    // question last.
-    if (tier.maxSnippet) {
-      return [
-        {
-          role: "user",
-          content: `${list}\n\nUsing only the text above, answer in ${language} in 1-2 sentences: ${query}`
-        }
-      ];
-    }
 
     return [
       { role: "system", content: SYSTEM_PROMPT },
@@ -627,6 +652,7 @@ export default class AiAnswer extends Plugin {
         case "done": {
           worker.terminate();
           finished = true;
+          if (text.trim()) recordSuccess();
           // let the reveal catch up before the footer appears
           if (!frame) pump();
           break;

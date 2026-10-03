@@ -457,3 +457,80 @@ footer {
     }
   }
 }
+
+// sidebar blocks (infobox, response time, suggestions...): one language with
+// the cards instead of grey hairlines, a default triangle and a blue chart.
+.sidebar-collapsible {
+  border-top: 0;
+}
+
+#sidebar-end-collapsible {
+  border-bottom: 0;
+}
+
+summary.title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  list-style: none;
+  font-family: @nb-serif;
+  font-size: 1.1rem;
+  color: var(--color-result-url-font);
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  // outlined +/- toggle instead of the browser triangle
+  &::before {
+    content: "+";
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border: 2px solid var(--color-nb-outline);
+    border-radius: 7px;
+    font-family: @nb-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+  }
+}
+
+details[open] > summary.title::before {
+  content: "\2212";
+}
+
+// per-engine response times: an outlined card with quiet row dividers
+#engines_msg .engine-stats {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: @nb-border;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-result-background);
+
+  td {
+    padding: 0.45rem 0.8rem;
+    border-top: 1px solid var(--nb-track);
+  }
+
+  tr:first-child td {
+    border-top: 0;
+  }
+
+  .engine-name a {
+    font-family: @nb-serif;
+  }
+
+  .response-error {
+    font-weight: 700;
+  }
+
+  .bar-chart-bar {
+    border-radius: 4px;
+  }
+}

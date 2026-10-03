@@ -218,10 +218,10 @@ plugins:
     active: true
 
   searx.plugins.infinite_scroll.SXNGPlugin:
-    active: false
+    active: true
 
   searx.plugins.ai_answer.SXNGPlugin:
-    active: false
+    active: true
 
   searx.plugins.hash_plugin.SXNGPlugin:
     active: true
@@ -531,7 +531,6 @@ engines:
   - name: bing
     engine: bing
     shortcut: bi
-    disabled: true
     # base_url: https://cn.bing.com  # for instances hosted in China
 
   - name: bing images
@@ -707,6 +706,7 @@ engines:
   - name: currency
     engine: currency_convert
     shortcut: cc
+    disabled: true
 
   - name: deezer
     engine: deezer
@@ -808,6 +808,7 @@ engines:
   - name: wikidata
     engine: wikidata
     shortcut: wd
+    disabled: true
     timeout: 3.0
     weight: 2
     # add "list" to the array to get results in the results list
@@ -847,6 +848,7 @@ engines:
   - name: duckduckgo
     engine: duckduckgo
     shortcut: ddg
+    disabled: true
 
   - name: duckduckgo web
     engine: duckduckgo_web
@@ -2589,7 +2591,6 @@ engines:
     categories: general
     search_type: web
     shortcut: yd
-    disabled: true
 
   - name: yandex images
     engine: yandex
@@ -3265,7 +3266,6 @@ engines:
     content_xpath: ./p
     paging: true
     send_page_num_on_first_page: false  # otherwise blocks requests
-    disabled: true
     about:
       website: https://www.zapmeta.com/
       use_official_api: false
@@ -3281,6 +3281,7 @@ engines:
   - name: brave
     engine: brave
     shortcut: br
+    disabled: true
     time_range_support: true
     paging: true
     categories: [general, web]

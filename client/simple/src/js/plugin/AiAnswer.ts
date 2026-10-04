@@ -22,6 +22,11 @@ type Prepared = {
 const TRAILING_REFUSAL = /\s*The sources do not contain a clear[^.]*\.?\s*$/i;
 const MIN_ANSWER = 80;
 
+// A small model sometimes loses the chat format and starts echoing the prompt
+// ("Answer in Russian: ...", "Query:", "Sources:") followed by a garbled second
+// copy of the answer. Everything from the first such marker on is dropped.
+const PROMPT_ECHO = /\s*(?:Answer in\b|Query:|Sources:)/i;
+
 // "[1]" and also groups such as "[1, 2]" or "[1; 3]"
 const CITATION_SPLIT = /(\[\d+(?:\s*[,;]\s*\d+)*\])/;
 const CITATION = /^\[(\d+(?:\s*[,;]\s*\d+)*)\]$/;
@@ -646,6 +651,13 @@ export default class AiAnswer extends Plugin {
           stopWaiting();
           status.remove();
           text += message.text;
+          if (text.search(PROMPT_ECHO) > 0) {
+            // the answer is over, the rest is garbage: stop generating it
+            text = text.slice(0, text.search(PROMPT_ECHO));
+            worker.terminate();
+            finished = true;
+            recordSuccess();
+          }
           if (!frame) frame = requestAnimationFrame(pump);
           break;
         }

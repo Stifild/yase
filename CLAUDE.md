@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A fork of [SearXNG](https://github.com/searxng/searxng) (metasearch engine, Python/Flask + a Vite/TypeScript/LESS frontend) rebranded as **YASE**. Upstream conventions apply; the fork-specific work is the UI rebrand (see `plans/yase-rebrand-palette.md` — palette, "black" theme removal, merged header/results, transparent favicons; source of truth is `client/simple/src/less/definitions.less`). The Python module is still `searx`.
+A fork of [SearXNG](https://github.com/searxng/searxng) (metasearch engine, Python/Flask + a Vite/TypeScript/LESS frontend) rebranded as **YASE**. Upstream conventions apply; the fork-specific work is the UI rebrand (see the "YASE Design System" artifact, https://claude.ai/artifact/VQyLxEZrLea4tyc7DvWvBH — palette, "black" theme removal, merged header/results, transparent favicons; source of truth is `client/simple/src/less/definitions.less`). The Python module is still `searx`.
 
 Note: a parent-directory `~/AGENTS.md` describes an unrelated Go app ("Infsch"); ignore it for this repo.
 

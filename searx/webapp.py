@@ -362,6 +362,8 @@ def get_translations():
         'ai_answer_err_unknown': gettext('Something went wrong while running the model.'),
         'ai_answer_fix_reload': gettext('Reload the page and try again.'),
         'ai_answer_retry': gettext('Try again'),
+        'ai_answer_regenerate': gettext('Regenerate'),
+        'ai_answer_cached': gettext('Saved in this browser'),
         'ai_answer_patience_1': gettext('Still here. The model is big, not stuck.'),
         'ai_answer_patience_2': gettext('Large downloads happen once, then it is cached.'),
         'ai_answer_patience_3': gettext('Your GPU is warming up.'),

@@ -32,4 +32,20 @@
   </div>{{- '' -}}
 </fieldset>{{- '' -}}
 
+<fieldset>{{- '' -}}
+  <legend id="pref_wallpaper">{{- _('Wallpaper') -}}</legend>{{- '' -}}
+  <div class="value wallpaper-controls">
+    <input type="file"
+           id="wallpaper-upload"
+           accept="image/png,image/jpeg,image/webp,image/gif"
+           aria-labelledby="pref_wallpaper"
+           aria-describedby="wallpaper-description wallpaper-status">
+    <button type="button" id="wallpaper-remove" class="button">{{- _('Remove wallpaper') -}}</button>
+    <span id="wallpaper-status" role="status" aria-live="polite"></span>
+  </div>
+  <div class="description" id="wallpaper-description">
+    {{- _('Choose a PNG, JPEG, WebP, or GIF image up to 2 MB. It is saved only in this browser.') -}}
+  </div>
+</fieldset>{{- '' -}}
+
 {%- include 'simple/preferences/center_alignment.html' -%}

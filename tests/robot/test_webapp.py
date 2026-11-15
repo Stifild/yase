@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # pylint: disable=missing-module-docstring,disable=missing-class-docstring,invalid-name
 
+import base64
+import tempfile
 from time import sleep
 
 url = "http://localhost:11111/"
@@ -68,6 +70,32 @@ def test_preferences_locale(browser):
     browser.visit(url)
     browser.links.find_by_href('/preferences').click()
     browser.is_text_present('Préférences')
+
+
+def test_wallpaper_upload(browser):
+    browser.visit(url)
+    browser.links.find_by_href('/preferences').click()
+    browser.find_by_xpath('//label[@for="tab-ui"]').first.click()
+
+    with tempfile.NamedTemporaryFile(suffix='.png') as wallpaper:
+        wallpaper.write(
+            base64.b64decode(
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADUlEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC'
+            )
+        )
+        wallpaper.flush()
+        browser.driver.find_element('id', 'wallpaper-upload').send_keys(wallpaper.name)
+        assert browser.is_text_present('Wallpaper saved in this browser.', wait_time=5)
+
+    assert browser.evaluate_script("document.documentElement.classList.contains('has-wallpaper')")
+    browser.visit(url)
+    assert browser.evaluate_script("document.documentElement.classList.contains('has-wallpaper')")
+
+    browser.visit(url + 'preferences')
+    browser.find_by_xpath('//label[@for="tab-ui"]').first.click()
+    browser.find_by_id('wallpaper-remove').click()
+    assert browser.is_text_present('Wallpaper removed.')
+    assert not browser.evaluate_script("document.documentElement.classList.contains('has-wallpaper')")
 
 
 def test_search(browser):

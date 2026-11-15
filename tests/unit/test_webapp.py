@@ -186,6 +186,7 @@ class ViewsTestCase(SearxTestCase):  # pylint: disable=too-many-public-methods
         self.assertIn(b'<form id="search_form" method="post" action="/preferences"', result.data)
         self.assertIn(b'<div id="categories_container">', result.data)
         self.assertIn(b'<legend id="pref_ui_locale">Interface language</legend>', result.data)
+        self.assertIn(b'id="wallpaper-upload"', result.data)
 
     def test_browser_locale(self):
         result = self.client.get('/preferences', headers={'Accept-Language': 'zh-tw;q=0.8'})

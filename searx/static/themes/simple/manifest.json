@@ -27,6 +27,7 @@
     "src": "src/js/index.ts",
     "isEntry": true,
     "dynamicImports": [
+      "src/js/main/wallpaper.ts",
       "src/js/plugin/MapView.ts",
       "src/js/plugin/InfiniteScroll.ts",
       "src/js/plugin/AiAnswer.ts",
@@ -87,6 +88,12 @@
       "src/js/index.ts",
       "_DcK-mo-Y.min.js"
     ]
+  },
+  "src/js/main/wallpaper.ts": {
+    "file": "chunk/C07fnk5q.min.js",
+    "name": "wallpaper",
+    "src": "src/js/main/wallpaper.ts",
+    "isDynamicEntry": true
   },
   "src/js/plugin/AiAnswer.ts": {
     "file": "chunk/BMAUWND2.min.js",

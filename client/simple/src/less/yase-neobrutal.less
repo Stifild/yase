@@ -114,7 +114,7 @@ button.category_button.selected {
   box-shadow: 4px 4px 0 var(--color-nb-shadow);
 
   a {
-    color: var(--color-nb-fill-font);
+    color: var(--color-answer-link-font, var(--color-nb-fill-font));
     text-decoration: underline;
   }
 }
@@ -587,5 +587,209 @@ details[open] > summary.title::before {
       height: 9rem;
       margin: 0;
     }
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -0.5rem;
+      width: 10rem;
+      height: 10rem;
+      border-radius: 12px;
+    }
   }
+}
+
+.wallpaper-frosted-glass() {
+  background-color: var(--color-glass-background);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: 0 8px 24px var(--color-glass-shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(125%);
+  backdrop-filter: blur(14px) saturate(125%);
+}
+
+// Keep wallpaper-dependent text and controls legible without changing the
+// result and infobox cards, which retain their opaque backgrounds.
+html.has-wallpaper {
+  .page_with_header,
+  #answers,
+  #backToTop,
+  .error-page,
+  .engine-tooltip,
+  .autocomplete.open,
+  .dialog-error,
+  .dialog-error-block,
+  .dialog-warning,
+  .dialog-warning-block,
+  .dialog-modal,
+  footer,
+  #sidebar .sidebar-collapsible:not(:has(.infobox)) {
+    .wallpaper-frosted-glass();
+  }
+
+  #search_header {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+
+    .search_box {
+      .wallpaper-frosted-glass();
+      border-radius: 0.8rem;
+    }
+
+    #q,
+    #clear_search {
+      background: transparent;
+    }
+  }
+
+  #search_logo::before {
+    .wallpaper-frosted-glass();
+    border-radius: 12px;
+  }
+
+  #categories_container {
+    .category_checkbox label,
+    .category_button {
+      .wallpaper-frosted-glass();
+      border-radius: 1.2rem;
+      padding: 0.35rem 0.85rem;
+    }
+
+    .category_checkbox input[type="checkbox"]:checked + label,
+    .category_button.selected {
+      background-color: var(--color-glass-active-background);
+      color: var(--color-nb-fill-font);
+      border-color: var(--color-nb-outline);
+    }
+  }
+
+  .search_filters {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    gap: 0.5rem 0.8rem;
+    padding: 0.6rem 0;
+
+    select {
+      .wallpaper-frosted-glass();
+      height: 2.8rem;
+      margin: 0;
+      padding: 0.45rem 0.8rem !important;
+      color: var(--color-base-font);
+      border-radius: 12px;
+      border-width: 1px 2rem 1px 1px;
+
+      &:hover,
+      &:focus {
+        background-color: var(--color-glass-background);
+      }
+    }
+  }
+
+  &[dir="rtl"] .search_filters select {
+    border-width: 1px 1px 1px 2rem;
+  }
+
+  #answers,
+  .page_with_header,
+  #backToTop,
+  .error-page,
+  .engine-tooltip,
+  .autocomplete.open,
+  .dialog-error,
+  .dialog-error-block,
+  .dialog-warning,
+  .dialog-warning-block,
+  .dialog-modal,
+  #sidebar .sidebar-collapsible:not(:has(.infobox)) {
+    border-radius: 12px;
+  }
+
+  .page_with_header {
+    box-sizing: border-box;
+    padding: 1.5rem;
+  }
+
+  .error-page {
+    box-sizing: border-box;
+    width: fit-content;
+    max-width: calc(100% - 2rem);
+    padding: 1.5rem;
+  }
+
+  #main_preferences select,
+  #main_preferences input[type="text"] {
+    background-color: transparent;
+    border-color: var(--color-glass-border);
+    border-style: solid;
+    border-width: 1px;
+    color: var(--color-base-font);
+
+    &:hover,
+    &:focus {
+      background-color: transparent;
+    }
+  }
+
+  #main_preferences select {
+    border-width: 1px 2rem 1px 1px;
+  }
+
+  .dialog-error,
+  .dialog-error-block {
+    border-color: var(--color-error);
+  }
+
+  .dialog-warning,
+  .dialog-warning-block {
+    border-color: var(--color-warning);
+  }
+
+  #answers {
+    color: var(--color-base-font);
+
+    --color-answer-link-font: var(--color-url-font);
+
+    .ai-answer {
+      --color-result-border: var(--color-glass-border);
+      border-left-color: var(--color-btn-background);
+    }
+  }
+
+  #sidebar .sidebar-collapsible:not(:has(.infobox)) {
+    padding: 0.75rem 0.85rem;
+  }
+
+  #infoboxes > .sidebar-collapsible > summary.title {
+    .wallpaper-frosted-glass();
+    margin-bottom: 0.6rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 12px;
+  }
+
+  #engines_msg .engine-stats {
+    background: transparent;
+    border: 0;
+  }
+}
+
+@media screen and (max-width: @tablet) {
+  html.has-wallpaper #search_logo {
+    .wallpaper-frosted-glass();
+    box-sizing: border-box;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.35rem;
+    border-radius: 12px;
+  }
+}
+
+html[dir="rtl"].has-wallpaper #main_preferences select {
+  border-width: 1px 1px 1px 2rem;
 }

@@ -73,6 +73,7 @@ def test_preferences_locale(browser):
 
 
 def test_wallpaper_upload(browser):
+    browser.driver.set_window_size(1600, 900)
     browser.visit(url)
     browser.links.find_by_href('/preferences').click()
     browser.find_by_xpath('//label[@for="tab-ui"]').first.click()
@@ -88,11 +89,57 @@ def test_wallpaper_upload(browser):
         assert browser.is_text_present('Wallpaper saved in this browser.', wait_time=5)
 
     assert browser.evaluate_script("document.documentElement.classList.contains('has-wallpaper')")
-    browser.visit(url)
+    browser.visit(url + 'search?q=test')
     assert browser.evaluate_script("document.documentElement.classList.contains('has-wallpaper')")
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('#search_header')).backgroundColor")
+        == 'rgba(0, 0, 0, 0)'
+    )
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('#search_header')).backdropFilter") == 'none'
+    )
+    assert 'blur(' in browser.evaluate_script("getComputedStyle(document.querySelector('.search_box')).backdropFilter")
+    assert 'blur(' in browser.evaluate_script(
+        "getComputedStyle(document.querySelector('#search_logo'), '::before').backdropFilter"
+    )
+    assert 'blur(' in browser.evaluate_script(
+        "getComputedStyle(document.querySelector('.search_filters select')).backdropFilter"
+    )
+    assert 'blur(' in browser.evaluate_script(
+        "getComputedStyle(document.querySelector('.category_button, .category_checkbox label')).backdropFilter"
+    )
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('.search_filters')).backgroundColor")
+        == 'rgba(0, 0, 0, 0)'
+    )
+    browser.evaluate_script("""
+        const answers = document.createElement('div');
+        answers.id = 'answers';
+        answers.innerHTML = '<div class="ai-answer"></div>';
+        document.querySelector('#results').prepend(answers);
+        const result = document.createElement('article');
+        result.className = 'result';
+        document.querySelector('#urls').append(result);
+        const infobox = document.createElement('aside');
+        infobox.className = 'infobox';
+        document.querySelector('#sidebar').append(infobox);
+        """)
+    assert 'blur(' in browser.evaluate_script("getComputedStyle(document.querySelector('#answers')).backdropFilter")
+    assert browser.evaluate_script("getComputedStyle(document.querySelector('#urls .result')).backdropFilter") == 'none'
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('#sidebar .infobox')).backdropFilter")
+        == 'none'
+    )
 
     browser.visit(url + 'preferences')
+    assert 'blur(' in browser.evaluate_script(
+        "getComputedStyle(document.querySelector('main.page_with_header')).backdropFilter"
+    )
     browser.find_by_xpath('//label[@for="tab-ui"]').first.click()
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('#main_preferences select')).backgroundColor")
+        == 'rgba(0, 0, 0, 0)'
+    )
     browser.find_by_id('wallpaper-remove').click()
     assert browser.is_text_present('Wallpaper removed.')
     assert not browser.evaluate_script("document.documentElement.classList.contains('has-wallpaper')")

@@ -103,11 +103,8 @@ def test_wallpaper_upload(browser):
         browser.evaluate_script("getComputedStyle(document.querySelector('#search_logo'), '::before').content")
         == 'none'
     )
-    assert (
-        browser.evaluate_script(
-            "(getComputedStyle(document.querySelector('#search_logo svg')).filter.match(/drop-shadow\\(/g) || []).length"
-        )
-        == 3
+    assert browser.evaluate_script(
+        "getComputedStyle(document.querySelector('#search_logo svg')).filter.includes('4px 8px')"
     )
     assert 'blur(' in browser.evaluate_script(
         "getComputedStyle(document.querySelector('.search_filters select')).backdropFilter"

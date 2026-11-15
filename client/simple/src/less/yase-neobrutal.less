@@ -587,16 +587,6 @@ details[open] > summary.title::before {
       height: 9rem;
       margin: 0;
     }
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: -0.5rem;
-      width: 10rem;
-      height: 10rem;
-      border-radius: 12px;
-    }
   }
 }
 
@@ -643,11 +633,6 @@ html.has-wallpaper {
     #clear_search {
       background: transparent;
     }
-  }
-
-  #search_logo::before {
-    .wallpaper-frosted-glass();
-    border-radius: 12px;
   }
 
   #categories_container {
@@ -776,17 +761,6 @@ html.has-wallpaper {
   #engines_msg .engine-stats {
     background: transparent;
     border: 0;
-  }
-}
-
-@media screen and (max-width: @tablet) {
-  html.has-wallpaper #search_logo {
-    .wallpaper-frosted-glass();
-    box-sizing: border-box;
-    width: 3rem;
-    height: 3rem;
-    padding: 0.35rem;
-    border-radius: 12px;
   }
 }
 

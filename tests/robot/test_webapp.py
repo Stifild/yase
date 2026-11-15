@@ -99,8 +99,15 @@ def test_wallpaper_upload(browser):
         browser.evaluate_script("getComputedStyle(document.querySelector('#search_header')).backdropFilter") == 'none'
     )
     assert 'blur(' in browser.evaluate_script("getComputedStyle(document.querySelector('.search_box')).backdropFilter")
-    assert 'blur(' in browser.evaluate_script(
-        "getComputedStyle(document.querySelector('#search_logo'), '::before').backdropFilter"
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('#search_logo'), '::before').content")
+        == 'none'
+    )
+    assert (
+        browser.evaluate_script(
+            "(getComputedStyle(document.querySelector('#search_logo svg')).filter.match(/drop-shadow\\(/g) || []).length"
+        )
+        == 3
     )
     assert 'blur(' in browser.evaluate_script(
         "getComputedStyle(document.querySelector('.search_filters select')).backdropFilter"
@@ -112,6 +119,12 @@ def test_wallpaper_upload(browser):
         browser.evaluate_script("getComputedStyle(document.querySelector('.search_filters')).backgroundColor")
         == 'rgba(0, 0, 0, 0)'
     )
+    browser.driver.set_window_size(756, 413)
+    assert (
+        browser.evaluate_script("getComputedStyle(document.querySelector('#search_logo')).backgroundColor")
+        == 'rgba(0, 0, 0, 0)'
+    )
+    browser.driver.set_window_size(1600, 900)
     browser.execute_script("""
         const answers = document.createElement('div');
         answers.id = 'answers';

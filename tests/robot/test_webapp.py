@@ -112,7 +112,7 @@ def test_wallpaper_upload(browser):
         browser.evaluate_script("getComputedStyle(document.querySelector('.search_filters')).backgroundColor")
         == 'rgba(0, 0, 0, 0)'
     )
-    browser.evaluate_script("""
+    browser.execute_script("""
         const answers = document.createElement('div');
         answers.id = 'answers';
         answers.innerHTML = '<div class="ai-answer"></div>';

@@ -598,8 +598,7 @@ details[open] > summary.title::before {
   backdrop-filter: blur(14px) saturate(125%);
 }
 
-// Keep wallpaper-dependent text and controls legible without changing the
-// result and infobox cards, which retain their opaque backgrounds.
+// Keep wallpaper-dependent text, controls and result cards legible.
 html.has-wallpaper {
   .page_with_header,
   #answers,
@@ -675,6 +674,16 @@ html.has-wallpaper {
         background-color: var(--color-glass-background);
       }
     }
+  }
+
+  .result,
+  #sidebar .infobox {
+    .wallpaper-frosted-glass();
+  }
+
+  #sidebar .infobox {
+    border: 1px solid var(--color-glass-border) !important;
+    background-color: var(--color-glass-background) !important;
   }
 
   &[dir="rtl"] .search_filters select {

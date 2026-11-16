@@ -135,10 +135,11 @@ def test_wallpaper_upload(browser):
         document.querySelector('#sidebar').append(infobox);
         """)
     assert 'blur(' in browser.evaluate_script("getComputedStyle(document.querySelector('#answers')).backdropFilter")
-    assert browser.evaluate_script("getComputedStyle(document.querySelector('#urls .result')).backdropFilter") == 'none'
-    assert (
-        browser.evaluate_script("getComputedStyle(document.querySelector('#sidebar .infobox')).backdropFilter")
-        == 'none'
+    assert 'blur(' in browser.evaluate_script(
+        "getComputedStyle(document.querySelector('#urls .result')).backdropFilter"
+    )
+    assert 'blur(' in browser.evaluate_script(
+        "getComputedStyle(document.querySelector('#sidebar .infobox')).backdropFilter"
     )
 
     browser.visit(url + 'preferences')

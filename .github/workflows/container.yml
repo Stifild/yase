@@ -198,6 +198,27 @@ jobs:
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
 
+      - name: Check SSH connectivity
+        env:
+          PROD_HOST: ${{ secrets.PROD_HOST }}
+          PROD_PORT: ${{ secrets.PROD_PORT }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import socket
+          import sys
+
+          try:
+              with socket.create_connection(
+                  (os.environ["PROD_HOST"], int(os.environ["PROD_PORT"])),
+                  timeout=10,
+              ):
+                  print("TCP preflight succeeded")
+          except (OSError, ValueError) as error:
+              print(f"::error::TCP preflight failed ({type(error).__name__})")
+              sys.exit(1)
+          PY
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:

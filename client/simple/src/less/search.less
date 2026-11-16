@@ -166,6 +166,24 @@ button.category_button {
   }
 }
 
+#feeling_lucky {
+  display: block;
+  margin: 0;
+  padding: 0.8rem;
+  background: var(--color-search-background);
+  border: none;
+  outline: none;
+  color: var(--color-search-font);
+  font-size: 0.95rem;
+  white-space: nowrap;
+  z-index: 100;
+  cursor: pointer;
+}
+
+#feeling_lucky[hidden] {
+  display: none;
+}
+
 #q:placeholder-shown ~ #clear_search {
   pointer-events: none;
 

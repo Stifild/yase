@@ -82,28 +82,17 @@ optgroup {
   }
 }
 
-.index .search_actions button {
-  padding: 0.65rem 1.2rem;
-  border: @nb-border;
-  border-radius: 0.6rem;
+#feeling_lucky {
+  padding: 0.65rem 0.8rem;
   background: var(--color-btn-background);
   color: var(--color-btn-font);
-  box-shadow: @nb-shadow;
+  border-left: 0;
   cursor: pointer;
-  transition:
-    transform 0.1s,
-    box-shadow 0.1s;
+  font-weight: 500;
 
   &:hover {
     background: var(--color-nb-fill);
     color: var(--color-nb-fill-font);
-    transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0 var(--color-nb-shadow);
-  }
-
-  &:active {
-    transform: translate(3px, 3px);
-    box-shadow: none;
   }
 }
 

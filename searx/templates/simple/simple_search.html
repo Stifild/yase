@@ -4,6 +4,7 @@
       <div class="search_box">
         <input id="q" name="q" type="text" placeholder="{{ _('Search for...') }}" autocomplete="off" autocapitalize="none" spellcheck="false" autocorrect="off" dir="auto" value="{{ q or '' }}">
         <button id="clear_search" type="reset" aria-label="{{ _('clear') }}" class="hide_if_nojs"><span>{{ icon_big('close') }}</span></button>
+        <button id="feeling_lucky" class="hide_if_nojs" type="submit" hidden>Мне повезёт!</button>
         <button id="send_search" type="submit" aria-label="{{ _('search') }}"><span class="hide_if_nojs">{{ icon_big('search') }}</span><span class="show_if_nojs">{{ _('search') }}</span></button>
         <div class="autocomplete hide_if_nojs"><ul></ul></div>
       </div>
@@ -17,7 +18,4 @@
   <input type="hidden" name="safesearch" value="{{ safesearch }}" >
   <input type="hidden" name="theme" value="{{ theme }}" >
   {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}" >{% endif %}
-  <div class="search_actions">
-    <button id="feeling_lucky" class="hide_if_nojs" type="submit">Мне повезёт!</button>
-  </div>
 </form>

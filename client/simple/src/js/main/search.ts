@@ -6,6 +6,7 @@ import { getElement } from "../util/getElement.ts";
 const searchForm: HTMLFormElement = getElement<HTMLFormElement>("search");
 const searchInput: HTMLInputElement = getElement<HTMLInputElement>("q");
 const searchReset: HTMLButtonElement = getElement<HTMLButtonElement>("clear_search");
+const feelingLuckyButton = document.getElementById("feeling_lucky");
 
 const isMobile: boolean = window.matchMedia("(max-width: 50em)").matches;
 const isResultsPage: boolean = document.querySelector("main")?.id === "main_results";
@@ -36,6 +37,18 @@ listen("click", searchReset, (event: MouseEvent) => {
   searchInput.value = "";
   searchInput.focus();
 });
+
+if (feelingLuckyButton) {
+  listen("click", feelingLuckyButton, (event: MouseEvent) => {
+    if (!searchInput.value.trim()) {
+      event.preventDefault();
+      searchInput.focus();
+      return;
+    }
+
+    searchInput.value = `${searchInput.value.trimEnd()} !!`;
+  });
+}
 
 for (const button of categoryButtons) {
   listen("click", button, (event: MouseEvent) => {

@@ -17,4 +17,7 @@
   <input type="hidden" name="safesearch" value="{{ safesearch }}" >
   <input type="hidden" name="theme" value="{{ theme }}" >
   {% if timeout_limit %}<input type="hidden" name="timeout_limit" value="{{ timeout_limit|e }}" >{% endif %}
+  <div class="search_actions">
+    <button id="feeling_lucky" class="hide_if_nojs" type="submit">Мне повезёт!</button>
+  </div>
 </form>

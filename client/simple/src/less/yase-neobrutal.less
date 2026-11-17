@@ -288,9 +288,32 @@ footer {
 }
 
 // autocomplete dropdown in the same language (flat, outlined); sized to the
-// search box itself so it never runs off a narrow screen
+// search box itself so it never runs off a narrow screen.
+//
+// Stacking: .search_box, category pills and result cards all use
+// backdrop-filter (frosted glass), which creates isolated stacking contexts
+// in DOM order. The dropdown's own z-index is then trapped inside the search
+// box and paints below categories, filters and results. Lift the whole header
+// and the search row above the rest so the dropdown always stays on top.
+#search_header {
+  position: relative;
+  z-index: 30;
+}
+
+#search_view {
+  position: relative;
+  z-index: 31;
+}
+
 .search_box {
   position: relative;
+  z-index: 32;
+}
+
+#categories,
+.search_filters {
+  position: relative;
+  z-index: 1;
 }
 
 .autocomplete.open {
@@ -302,6 +325,7 @@ footer {
   border: @nb-border;
   border-radius: 12px;
   box-shadow: @nb-shadow;
+  z-index: 5000;
 }
 
 // open but still empty (suggestions loading): draw nothing, otherwise the
@@ -363,10 +387,10 @@ footer {
 // Keep the outlined box in place instead; suggestions drop down below it.
 @media screen and (max-width: @phone) {
   #search_view:focus-within {
-    position: static;
+    position: relative;
     height: auto;
     width: auto;
-    z-index: auto;
+    z-index: 31;
     background: none;
 
     .search_box {
